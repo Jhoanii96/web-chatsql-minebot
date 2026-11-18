@@ -1,0 +1,716 @@
+<!DOCTYPE html>
+<html lang="{{ session.get('lang', 'es') }}">
+
+{%
+set chatsql_graph_permission = (
+"00000000-0000-0000-0000-000000000000" in user_data['permission'] or
+"4e47e789-2a18-4b34-bc36-5efbca45cc32" in user_data['permission']
+)
+%}
+
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    {% block header_title %}{% endblock %}
+    <!--<link rel="favicon" href="/static/favicon/favicon.ico">-->
+
+    <link rel="icon" type="image/png" href="/static/favicon/favicon-96x96.png" sizes="96x96" />
+    <link rel="icon" type="image/svg+xml" href="/static/favicon/favicon.svg" />
+    <link rel="shortcut icon" href="/static/favicon/favicon.ico" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/static/favicon/apple-touch-icon.png" />
+    <meta name="apple-mobile-web-app-title" content="MineBot" />
+    <link rel="manifest" href="/static/favicon/site.webmanifest" />
+    <meta name="msapplication-TileColor" content="#da532c">
+    <meta name="theme-color" content="#ffffff">
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    <!-- Bootstrap 3.3.7 -->
+    <link rel="stylesheet" href="{{url_for('static',filename='bower_components/bootstrap/dist/css/bootstrap.min.css')}}">
+    <!-- DataTables -->
+    <link rel="stylesheet" href="/static/scripts/datatables/css/dataTables.bootstrap.min.css">
+    <!-- <link rel="stylesheet" href="/static/scripts/datatables/css/datatables.min.css"> -->
+    <!-- Theme style -->
+    <link rel="stylesheet" href="/static/dist/css/AdminLTE.min.css?v={{ version }}">
+    <!-- AdminLTE Skins. Choose a skin from the css/skins
+         folder instead of downloading all of them to reduce the load. -->
+    <link rel="stylesheet" href="/static/dist/css/skins/_all-skins.css?v={{ version }}">
+    <link rel="stylesheet" href="/static/scripts/morris.js/morris.css">
+    <link rel="stylesheet" href="/static/scripts/introjs/introjs.min.css">
+    <link rel="stylesheet" type="text/css" href="/static/scripts/msdropdown/css/dd.css" />
+    <script src="{{url_for('static',filename='scripts/msdropdown/js/dd.min.js')}}"></script>
+    <script src="/static/scripts/modernizr-2.6.2.js"></script>
+    {% block header_scripts %}
+    {% endblock %}
+    <link rel="stylesheet" href="/static/content/css/site.css?v={{ version }}">
+    <script type="text/javascript">
+        // Global variables
+        window.global_role_name = '{{ user_data["role_name"] }}';
+        window.global_web_app_version = '{{ WEB_APP_VERSION }}';
+        window.language = '{{ session.get("lang", "es") }}';
+        window.chatbot_language_english = '{{ translations["chatbot_language_english"] }}';
+        window.chatbot_language_spanish = '{{ translations["chatbot_language_spanish"] }}';
+        window.chatbot_text_you = '{{ translations["chatbot_text_you"] }}';
+        window.chatbot_empty_questions = '{{ translations["chatbot_empty_questions"] }}';
+        window.chatbot_save_button = '{{ translations["chatbot_save_button"] }}';
+        window.chatbot_save_all_button = '{{ translations["chatbot_save_all_button"] }}';
+        window.chatbot_now = '{{ translations["chatbot_now"] }}';
+        window.chatbot_next = '{{ translations["chatbot_next"] }}';
+        window.chatbot_back = '{{ translations["chatbot_back"] }}';
+        window.chatbot_finish = '{{ translations["chatbot_finish"] }}';
+        window.chatbot_search_add = '{{ translations["chatbot_search_add"] }}';
+        window.chatbot_updated_at = '{{ translations["chatbot_updated_at"] }}';
+        window.chatbot_changes_saved_button = '{{ translations["chatbot_changes_saved_button"] }}';
+        window.chatbot_save_response_button = '{{ translations["chatbot_save_response_button"] }}';
+        window.chatbot_save_all_responses_checkbox = '{{ translations["chatbot_save_all_responses_checkbox"] }}';
+        window.chatbot_refresh_button = '{{ translations["chatbot_refresh_button"] }}';
+        window.chatbot_select = '{{ translations["chatbot_select"] }}';
+        window.chatbot_all_documents = '{{ translations["chatbot_all_documents"] }}';
+        window.chatbot_delete = '{{ translations["chatbot_delete"] }}';
+        window.chatbot_deleting = '{{ translations["chatbot_deleting"] }}';
+        window.chatbot_really_delete = '{{ translations["chatbot_really_delete"] }}';
+        window.chatbot_delete_item = '{{ translations["chatbot_delete_item"] }}';
+        window.chatbot_delete_item_error = '{{ translations["chatbot_delete_item_error"] }}';
+        window.chatbot_welcome_chat = '{{ translations["chatbot_welcome_chat"] }}';
+        window.chatbot_no_records_found = '{{ translations["chatbot_no_records_found"] }}';
+        window.chatbot_alert_four_characters = '{{ translations["chatbot_alert_four_characters"] }}';
+        window.chatbot_alert_select_phase_name = '{{ translations["chatbot_alert_select_phase_name"] }}';
+        window.chatbot_generate_excel = '{{ translations["chatbot_generate_excel"] }}';
+        window.chatbot_downloading = '{{ translations["chatbot_downloading"] }}';
+        window.chatbot_generating = '{{ translations["chatbot_generating"] }}';
+        window.chatbot_search = '{{ translations["chatbot_search"] }}';
+        window.chart_label_date = '{{ translations["chart_label_date"] }}';
+        window.chart_label_value = '{{ translations["chart_label_value"] }}';
+        window.chatbot_alert_error = '{{ translations["chatbot_alert_error"] }}';
+        window.chatbot_alert_warning = '{{ translations["chatbot_alert_warning"] }}';
+        window.chatbot_alert_information = '{{ translations["chatbot_alert_information"] }}';
+        window.chatbot_alert_question = '{{ translations["chatbot_alert_question"] }}';
+        window.chatbot_alert_success = '{{ translations["chatbot_alert_success"] }}';
+        window.chatbot_notification_iteration_finished = '{{ translations["chatbot_notification_iteration_finished"] }}';
+        window.chatbot_notification_dictionary_loaded = '{{ translations["chatbot_notification_dictionary_loaded"] }}';
+        window.chatbot_notification_document_uploaded = '{{ translations["chatbot_notification_document_uploaded"] }}';
+        window.chatbot_message_analyzing_dictionary = '{{ translations["chatbot_message_analyzing_dictionary"] }}';
+        window.chatbot_message_passed_analyzing = '{{ translations["chatbot_message_passed_analyzing"] }}';
+        // Chat Sql
+        window.chatsql_database_modal_sqltable_select = '{{ translations["chatsql_database_modal_sqltable_select"] }}';
+        window.chatsql_database_modal_save_table_button = '{{ translations["chatsql_database_modal_save_table_button"] }}';
+        window.chatsql_chart_modal_title = '{{ translations["chatsql_chart_modal_title"] }}';
+        window.chatsql_chart_modal_center = '{{ translations["chatsql_chart_modal_center"] }}';
+        window.chatsql_chart_modal_standard_deviation = '{{ translations["chatsql_chart_modal_standard_deviation"] }}';
+        window.chatsql_chart_modal_lower_control_limit = '{{ translations["chatsql_chart_modal_lower_control_limit"] }}';
+        window.chatsql_chart_modal_upper_control_limit = '{{ translations["chatsql_chart_modal_upper_control_limit"] }}';
+        window.chatsql_chart_modal_beyond_limits = '{{ translations["chatsql_chart_modal_beyond_limits"] }}';
+        window.chatsql_chart_modal_violating_runs = '{{ translations["chatsql_chart_modal_violating_runs"] }}';
+        window.chatsql_chart_modal_data_type_alert = '{{ translations["chatsql_chart_modal_data_type_alert"] }}';
+        window.chatsql_database_feature_navbar_database_title = `{{ translations["chatsql_database_feature_navbar_database_title"] | safe }}`;
+        window.chatsql_database_feature_navbar_database_intro = `{{ translations["chatsql_database_feature_navbar_database_intro"] | safe }}`;
+        window.chatsql_database_feature_navbar_setting_title = `{{ translations["chatsql_database_feature_navbar_setting_title"] | safe }}`;
+        window.chatsql_database_feature_navbar_setting_intro = `{{ translations["chatsql_database_feature_navbar_setting_intro"] | safe }}`;
+        window.chatsql_database_feature_identify_tabs_title = `{{ translations["chatsql_database_feature_identify_tabs_title"] | safe }}`;
+        window.chatsql_database_feature_identify_tabs_intro = `{{ translations["chatsql_database_feature_identify_tabs_intro"] | safe }}`;
+        window.chatsql_database_feature_show_refresh_title = `{{ translations["chatsql_database_feature_show_refresh_title"] | safe }}`;
+        window.chatsql_database_feature_show_refresh_intro = `{{ translations["chatsql_database_feature_show_refresh_intro"] | safe }}`;
+        window.chatsql_database_feature_engage_chat_title = `{{ translations["chatsql_database_feature_engage_chat_title"] | safe }}`;
+        window.chatsql_database_feature_block_message_intro = `{{ translations["chatsql_database_feature_block_message_intro"] | safe }}`;
+        window.chatsql_database_feature_input_message_intro = `{{ translations["chatsql_database_feature_input_message_intro"] | safe }}`;
+        window.chatsql_database_feature_questions_history_title = `{{ translations["chatsql_database_feature_questions_history_title"] | safe }}`;
+        window.chatsql_database_feature_questions_history_intro = `{{ translations["chatsql_database_feature_questions_history_intro"] | safe }}`;
+        window.chatsql_graph_permission = '{{ chatsql_graph_permission | tojson }}';
+        // Chat Flow
+        window.chatflow_event_modal_event_title_select = '{{ translations["chatflow_event_modal_event_title_select"] }}';
+        window.chatflow_event_modal_read_pdf = '{{ translations["chatflow_event_modal_read_pdf"] }}';
+        window.chatflow_image_modal_event_title_select = '{{ translations["chatflow_image_modal_event_title_select"] }}';
+        window.chatflow_image_modal_execute_button = '{{ translations["chatflow_image_modal_execute_button"] }}';
+        window.chatflow_sqlquery_modal_event_title_select = '{{ translations["chatflow_sqlquery_modal_event_title_select"] }}';
+        window.chatflow_sqlquery_modal_object_select = '{{ translations["chatflow_sqlquery_modal_object_select"] }}';
+        window.chatflow_sqlquery_modal_execute_button = '{{ translations["chatflow_sqlquery_modal_execute_button"] }}';
+        window.chatflow_sqlquery_modal_save_query_button = '{{ translations["chatflow_sqlquery_modal_save_query_button"] }}';
+        window.chatflow_flow_modal_save_changes = '{{ translations["chatflow_flow_modal_save_changes"] }}';
+        window.chatflow_flow_modal_delete_category = '{{ translations["chatflow_flow_modal_delete_category"] }}';
+        window.chatflow_flow_modal_delete_phase = '{{ translations["chatflow_flow_modal_delete_phase"] }}';
+        window.chatflow_flow_modal_delete_flow = '{{ translations["chatflow_flow_modal_delete_flow"] }}';
+        window.chatflow_flow_feature_phase_group_title = '{{ translations["chatflow_flow_feature_phase_group_title"] }}';
+        window.chatflow_flow_feature_parameters_title = '{{ translations["chatflow_flow_feature_parameters_title"] }}';
+        window.chatflow_flow_feature_phase_table_title = '{{ translations["chatflow_flow_feature_phase_table_title"] }}';
+        window.chatflow_flow_feature_add_row_title = '{{ translations["chatflow_flow_feature_add_row_title"] }}';
+        window.chatflow_flow_feature_load_table_title = '{{ translations["chatflow_flow_feature_load_table_title"] }}';
+        window.chatflow_flow_feature_save_phases_title = '{{ translations["chatflow_flow_feature_save_phases_title"] }}';
+        window.chatflow_flow_feature_group_category_intro = `{{ translations["chatflow_flow_feature_group_category_intro"] | safe }}`;
+        window.chatflow_flow_feature_phase_name_intro = `{{ translations["chatflow_flow_feature_phase_name_intro"] | safe }}`;
+        window.chatflow_flow_feature_parameters_intro = `{{ translations["chatflow_flow_feature_parameters_intro"] | safe }}`;
+        window.chatflow_flow_feature_phase_table_intro = `{{ translations["chatflow_flow_feature_phase_table_intro"] | safe }}`;
+        window.chatflow_flow_feature_add_row_intro = `{{ translations["chatflow_flow_feature_add_row_intro"] | safe }}`;
+        window.chatflow_flow_feature_load_table_intro = `{{ translations["chatflow_flow_feature_load_table_intro"] | safe }}`;
+        window.chatflow_flow_feature_save_phases_intro = `{{ translations["chatflow_flow_feature_save_phases_intro"] | safe }}`;
+        // Documents
+        window.documents_blob_container_select = '{{ translations["documents_blob_container_select"] }}';
+        window.documents_upload_file = '{{ translations["documents_upload_file"] }}';
+        window.documents_uploading_file = '{{ translations["documents_uploading_file"] }}';
+        window.documents_uploaded_successful = '{{ translations["documents_uploaded_successful"] }}';
+        window.documents_uploading_to_pinecone = '{{ translations["documents_uploading_to_pinecone"] }}';
+        // User
+        window.user_confirmation_copy_user_dataset = '{{ translations["user_confirmation_copy_user_dataset"] }}';
+        // Dictionary
+        window.dictionary_confirmation_reload_dictionary = '{{ translations["dictionary_confirmation_reload_dictionary"] }}';
+        window.dictionary_generate_dictionary_button = '{{ translations["dictionary_generate_dictionary_button"] }}';
+        window.dictionary_generated_dictionary_button = '{{ translations["dictionary_generated_dictionary_button"] }}';
+        window.dictionary_title_generate_with_chatgpt = '{{ translations["dictionary_title_generate_with_chatgpt"] }}';
+        // DataTable 
+        window.chatbot_datatable_search = '{{ translations["chatbot_datatable_search"] }}';
+        window.chatbot_datatable_all = '{{ translations["chatbot_datatable_all"] }}';
+        window.chatbot_datatable_lengthmenu = '{{ translations["chatbot_datatable_lengthmenu"] }}';
+        window.chatbot_datatable_first = '{{ translations["chatbot_datatable_first"] }}';
+        window.chatbot_datatable_last = '{{ translations["chatbot_datatable_last"] }}';
+        window.chatbot_datatable_next = '{{ translations["chatbot_datatable_next"] }}';
+        window.chatbot_datatable_previous = '{{ translations["chatbot_datatable_previous"] }}';
+        window.chatbot_datatable_info = '{{ translations["chatbot_datatable_info"] }}';
+        window.chatbot_datatable_infofiltered = '{{ translations["chatbot_datatable_infofiltered"] }}';
+        window.chatbot_datatable_zerorecords = '{{ translations["chatbot_datatable_zerorecords"] }}';
+        window.chatbot_datatable_infoempty = '{{ translations["chatbot_datatable_infoempty"] }}';
+        window.chatbot_datatable_loadingrecords = '{{ translations["chatbot_datatable_loadingrecords"] }}';
+        window.chatbot_datatable_emptytable = '{{ translations["chatbot_datatable_emptytable"] }}';
+    </script>
+    {% block styles %}
+    {% endblock %}
+</head>
+
+<body class="{{ theme }} sidebar-mini {{ sidebar_state }}">
+
+    <div id="alert-section" class="box-body" style="background: transparent; position: absolute; top: 0; left: 0; z-index: 999999; width: 100%; padding: 0;">
+        <div class="alert alert-danger alert-dismissible" style="margin: 10px; display: none;">
+            <button type="button" class="close" data-dismiss="alert" aria-hidden="false" onfocus="this.setAttribute('aria-hidden', 'false');">
+                ×
+            </button>
+            <h4 id="alert-title"><i class="icon fa fa-ban"></i> Information</h4>
+            <span id="alert-text" style="white-space: break-spaces;"></span>
+        </div>
+    </div>
+    <div class="popup" id="popup">
+        <span class="popup-content">
+        </span>
+    </div>
+    <!-- Custom Confirmation Dialog -->
+    <div id="confirmDialog" class="dialog-overlay" style="display: none;">
+        <div class="dialog-box">
+            <div id="dialogTitle" class="dialog-header">{{ translations['chatbot_confirm_dialog_title'] }}</div>
+            <div id="dialogBody" class="dialog-body">Do you want to visit the channel?</div>
+            <div class="dialog-footer">
+                <button id="confirmOk" class="btn-primary-bot small-button">{{ translations['chatbot_confirm_dialog_ok'] }}</button>
+                <button id="confirmCancel" class="btn-primary-bot small-button">{{ translations['chatbot_confirm_dialog_cancel'] }}</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="wrapper_page" class="wrapper">
+        <header class="main-header" style="height: 10vh;">
+            <!-- Header Navbar: style can be found in header.less -->
+            <nav class="navbar navbar-static-top">
+                <!-- Sidebar toggle button-->
+                <a href="#" class="sidebar-toggle" data-toggle="push-menu" role="button"
+                    style="height: 10vh;display: flex;align-items: center;">
+                    <span class="sr-only">Toggle navigation</span>
+                </a>
+                <!-- Navbar Left Menu -->
+                <div class="navbar-left">
+                    <ul class="nav navbar-nav">
+                        {% block home_leftnavbar %}{% endblock %}
+                        {% block chat_gpt_leftnavbar %}{% endblock %}
+                        {% block chat_sql_leftnavbar %}{% endblock %}
+                        {% block chat_pdf_leftnavbar %}{% endblock %}
+                        {% block chat_pbi_leftnavbar %}{% endblock %}
+                        {% block chat_flow_leftnavbar %}{% endblock %}
+                        {% block chat_oe_leftnavbar %}{% endblock %}
+                        {% block chat_editor_leftnavbar %}{% endblock %}
+                        {% block savedchat_leftnavbar %}{% endblock %}
+                        {% block documents_leftnavbar %}{% endblock %}
+                        {% block user_configuration_leftnavbar %}{% endblock %}
+                        {% block general_settings_leftnavbar %}{% endblock %}
+                    </ul>
+                </div>
+
+                <!-- Navbar Right Menu -->
+                <div class="navbar-custom-menu">
+                    <ul class="nav navbar-nav">
+                        {% block home_rightnavbar %}{% endblock %}
+                        {% block chat_gpt_rightnavbar %}{% endblock %}
+                        {% block chat_sql_rightnavbar %}{% endblock %}
+                        {% block chat_pdf_rightnavbar %}{% endblock %}
+                        {% block chat_pbi_rightnavbar %}{% endblock %}
+                        {% block chat_flow_rightnavbar %}{% endblock %}
+                        {% block chat_oe_rightnavbar %}{% endblock %}
+                        {% block chat_editor_rightnavbar %}{% endblock %}
+                        {% block savedchat_rightnavbar %}{% endblock %}
+                        {% block documents_rightnavbar %}{% endblock %}
+                        {% block user_configuration_rightnavbar %}{% endblock %}
+                        {% block general_settings_rightnavbar %}{% endblock %}
+                    </ul>
+                </div>
+
+
+            </nav>
+        </header>
+        <!-- Left side column. contains the logo and sidebar -->
+        <aside class="main-sidebar" style="height: 100vh;border-top-right-radius: 10px;">
+            <!-- sidebar: style can be found in sidebar.less -->
+            <section>
+                <!-- sidebar menu: : style can be found in sidebar.less -->
+                <div class="logo-panel">
+                    <div class="image" id="main-image-logo">
+                    </div>
+                </div>
+                <div class="block-sidebar-menu">
+                    <div>
+                        <ul class="sidebar-menu" data-widget="tree">
+                            <hr class="sidebar-separator">
+                            <li id="sidebar-title-menu" class="header">{{ translations['layout_left_panel_sidebar_title_menu'] }}</li>
+                            <li id="sidebar_chat_section" class="treeview">
+                                <a href="javascript:void(0)" class="sidebar-li-section">
+                                    <!-- <i class="fa fa-commenting-o"></i> -->
+                                    <img src="../static/dist/img/sqlv7/messages.svg" alt="Chat" style="width: 17px;">
+                                    <span class="sidebar-span-section">{{ translations['layout_left_panel_chat'] }}</span>
+                                    <!--<i class="fa fa-desktop"></i> <span>Dashboard</span>-->
+                                    <span class="pull-right-container">
+                                        <i class="fa fa-angle-left pull-right"></i>
+                                    </span>
+                                </a>
+                                <ul class="treeview-menu" style="padding-left: 0px;">
+                                    {% if ("00000000-0000-0000-0000-000000000000" in user_data['permission'] or
+                                    "05a4b2cb-a94a-4633-975d-0567a4f59a57" in user_data['permission']) and WEB_APP_VERSION != 'Lite': %}
+                                    <li><a href="/chatsql">{{ translations['layout_left_panel_chatsql'] }}</a></li>
+                                    {% endif %}
+                                    {% if "00000000-0000-0000-0000-000000000000" in user_data['permission'] or
+                                    "d37a6e81-100f-469c-9b95-e46b067d3711" in user_data['permission']: %}
+                                    <li><a href="/chatflow">{{ translations['layout_left_panel_chatflow'] }}</a></li>
+                                    {% endif %}
+                                </ul>
+                            </li>
+                            {% if ("00000000-0000-0000-0000-000000000000" in user_data['permission'] or
+                            "da8e7d5d-1abc-4632-bffa-0e989ed4d509" in user_data['permission']) and WEB_APP_VERSION != 'Lite': %}
+                            <li>
+                                <a href="/questions" class="sidebar-li-section">
+                                    <i class="fa fa-question-circle"></i>
+                                    <span class="sidebar-span-section">{{ translations['layout_left_panel_frequent_questions'] }}</span>
+                                    <!--<i class="fa fa-wechat"></i> <span>ChatGpt</span>-->
+                                </a>
+                            </li>
+                            {% endif %}
+                            {% if ("00000000-0000-0000-0000-000000000000" in user_data['permission'] or
+                            "66e37d83-fdfc-467a-bc0e-94ad31e7099a" in user_data['permission']) and WEB_APP_VERSION != 'Lite': %}
+                            <li>
+                                <a href="/dictionary" class="sidebar-li-section">
+                                    <i class="fa fa-book"></i>
+                                    <span class="sidebar-span-section">{{ translations['layout_left_panel_dictionary'] }}</span>
+                                    <!--<i class="fa fa-wechat"></i> <span>ChatGpt</span>-->
+                                </a>
+                            </li>
+                            {% endif %}
+                            {% if ("00000000-0000-0000-0000-000000000000" in user_data['permission'] or
+                            "9973a807-6d72-4a03-9822-45284453c7e1" in user_data['permission']) and WEB_APP_VERSION != 'Lite': %}
+                            <li>
+                                <a href="/document" class="sidebar-li-section">
+                                    <i class="fa fa-file-archive-o" style="margin-left: 1px;"></i>
+                                    <span class="sidebar-span-section">{{ translations['layout_left_panel_upload_documents'] }}</span>
+                                </a>
+                            </li>
+                            {% endif %}
+                            {% if ("00000000-0000-0000-0000-000000000000" in user_data['permission'] or
+                            "1ff09c67-9ad3-4254-a2c1-6bb169b07e95" in user_data['permission']): %}
+                            <li>
+                                <a href="/translations" class="sidebar-li-section">
+                                    <i class="fa fa-language" style="margin-left: 3px;"></i>
+                                    <span class="sidebar-span-section">{{ translations['layout_left_panel_translations'] }}</span>
+                                </a>
+                            </li>
+                            {% endif %}
+                            {% if ("00000000-0000-0000-0000-000000000000" in user_data['permission'] or
+                            "1e50ce2d-5488-42a6-9984-8fff8d5a18fa" in user_data['permission']) and WEB_APP_VERSION != 'Lite': %}
+                            <li style="display: none;">
+                                <a href="/savedchat" class="sidebar-li-section">
+                                    <i class="fa fa-bookmark-o" style="margin-left: 3px;"></i>
+                                    <span class="sidebar-span-section">{{ translations['layout_left_panel_saved_chats'] }}</span>
+                                </a>
+                            </li>
+                            {% endif %}
+
+
+                        </ul>
+
+                    </div>
+
+                    <div>
+                        <ul class="sidebar-menu tree" data-widget="tree">
+                            <hr class="sidebar-separator">
+                            <li class="section-button-theme">
+                                <div class="block-theme">
+                                    <button id="btn-mode-white" class="btn-theme-white {% if theme == 'skin-white' %}selected{% endif %}" type="button">
+                                        <img src="../static/dist/img/sun.png" alt="Sun" style="width: 15px;">
+                                        <span>{{ translations['chatbot_theme_light'] }}</span>
+                                    </button>
+                                    <button id="btn-mode-dark" class="btn-theme-dark {% if theme == 'skin-dark' %}selected{% endif %}" type="button">
+                                        <img src="../static/dist/img/moon.png" alt="Moon" style="width: 15px;">
+                                        <span>{{ translations['chatbot_theme_dark'] }}</span>
+                                    </button>
+                                </div>
+                            </li>
+                            <li class="section-switch-theme">
+                                <a href="#" class="sidebar-li-section">
+                                    <label class="switch-theme">
+                                        <input type="checkbox" id="themeToggle" {% if theme == 'skin-dark' %}checked{% endif %}>
+                                        <span class="switch-slider"></span>
+                                    </label>
+                                </a>
+                            </li>
+                            <li>
+                                <a href="#" class="sidebar-li-section">
+                                    <i class="fa fa-globe" style="margin-left: 2px;"></i>
+                                    <span class="sidebar-span-section">
+                                        <span>{{ translations['layout_left_panel_language'] }}</span>
+                                        <select id="language_switch" class="form-control" style="width: auto;display: inline-block;margin: 0px 5px;">
+                                            <option value="es" {% if session.get('lang', 'es')=='es' %}selected{% endif %}>ES</option>
+                                            <option value="en" {% if session.get('lang', 'es')=='en' %}selected{% endif %}>EN</option>
+                                        </select>
+                                    </span>
+                                </a>
+                            </li>
+                            {% if user_data['id_role'] == "ccec237d-cf49-4952-949d-a837f9789398": %}
+                            <li>
+                                <a href="/user" class="sidebar-li-section">
+                                    <i class="fa fa-user"></i>
+                                    <span class="sidebar-span-section">{{ translations['layout_left_panel_user_configuration'] }}</span>
+                                    <!--<i class="fa fa-wechat"></i> <span>ChatGpt</span>-->
+                                </a>
+                            </li>
+                            {% endif %}
+                            {% if "00000000-0000-0000-0000-000000000000" in user_data['permission'] or
+                            "eb2608e4-dcd0-40f8-8170-d4cfab6a5748" in user_data['permission']: %}
+                            <li>
+                                <a href="/settings" class="sidebar-li-section">
+                                    <i class="fa fa-gear"></i>
+                                    <span class="sidebar-span-section">{{ translations['layout_left_panel_general_settings'] }}</span>
+                                </a>
+                            </li>
+                            {% endif %}
+                        </ul>
+
+                    </div>
+                </div>
+            </section>
+            <!-- /.sidebar -->
+        </aside>
+
+        <div class="content-wrapper">
+            <!-- Main content -->
+            <section class="content" style="padding: 0;">
+                {% block content %}{% endblock %}
+            </section>
+            <!-- /.content -->
+        </div>
+
+
+
+        <!-- /.control-sidebar -->
+        <!-- Add the sidebar's background. This div must be placed
+             immediately after the control sidebar -->
+        <div class="control-sidebar-bg" style="display: none;"></div>
+
+    </div>
+    <!-- ./wrapper -->
+
+    <div id="before_load" style="display: none;"></div>
+
+
+    <div class="modal fade" id="app_configuration_modal">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                    <h4 id="title_modal" class="modal-title">{{ translations['layout_app_configuration_modal_title_modal'] }}</h4>
+                </div>
+                <div class="modal-body">
+                    <!-- Custom Tabs -->
+                    <div class="nav-tabs-custom">
+                        <ul class="nav nav-tabs">
+                            {% block app_configuration_tabs %}{% endblock %}
+                        </ul>
+                        <div class="tab-content">
+                            <!-- /.tab-pane -->
+                            {% block app_configuration_main %}{% endblock %}
+                            <!-- /.tab-pane -->
+                            <div class="tab-pane" id="openai">
+                                <h4>{{ translations['layout_app_configuration_modal_openai_details'] }}</h4>
+                                <label class="col-form-label" for="openai_type">{{ translations['layout_app_configuration_modal_openai_type'] }}</label>
+                                <select class="form-control mb-3" id="openai_type" is="ms-dropdown"
+                                    style="margin-bottom: 1rem;">
+                                    <option value="open_ai" {% if user_data["openai_type"] or user_data['default_openai_type'] == 'open_ai' %}selected{% endif
+                                        %}>OpenAI</option>
+                                    <option value="azure" {% if user_data["openai_type"] or user_data['default_openai_type'] == 'azure' %}selected{% endif %}>
+                                        Azure</option>
+                                </select>
+                                <div id="openai_type_section">
+                                    <label class="col-form-label" for="openai_model">{{ translations['layout_app_configuration_modal_openai_model'] }}</label>
+                                    <select class="form-control mb-3" id="openai_model" is="ms-dropdown"
+                                        style="margin-bottom: 1rem;">
+                                        {% for model in openai_list_models["chat_completion"] %}
+                                            {% if user_data["openai_model"] != '' %}
+                                            <option value="{{ model }}" {% if user_data["openai_model"] == model %}selected{% endif %}>
+                                                {{ model }}
+                                            </option>
+                                            {% else %}
+                                            <option value="{{ model }}" {% if user_data["default_openai_model"] == model %}selected{% endif %}>
+                                                {{ model }}
+                                            </option>
+                                            {% endif %}
+                                        {% endfor %}
+                                    </select>
+                                    <label class="col-form-label" for="openai_maxtokens">{{ translations['layout_app_configuration_modal_openai_max_tokens'] }}</label>
+                                    <input id="openai_maxtokens" class="form-control mb-3"
+                                        placeholder="{{ translations['layout_app_configuration_modal_placeholder_openai_max_tokens'] }}"
+                                        value="{{ user_data['openai_maxtoken'] or user_data['default_openai_maxtoken'] }}">
+
+                                    <label class="col-form-label" for="openai_temperature">{{ translations['layout_app_configuration_modal_openai_temperature'] }}</label>
+                                    <input id="openai_temperature" class="form-control mb-3"
+                                        placeholder="{{ translations['layout_app_configuration_modal_placeholder_openai_temperature'] }}"
+                                        value="{{ user_data['openai_temperature'] or user_data['default_openai_temperature'] }}">
+
+                                    <label class="col-form-label" for="openai_embedded_model">{{ translations['layout_app_configuration_modal_openai_embedded'] }}</label>
+                                    <select class="form-control mb-3" id="openai_embedded_model" is="ms-dropdown"
+                                        style="margin-bottom: 1rem;">
+                                        {% for model in openai_list_models["embeddings"] %}
+                                            {% if user_data["openai_embedded_model"] != '' %}
+                                            <option value="{{ model }}" {% if user_data["openai_embedded_model"] == model %}selected{% endif %}>
+                                                {{ model }}
+                                            </option>
+                                            {% else %}
+                                            <option value="{{ model }}" {% if user_data["default_openai_embedded_model"] == model %}selected{% endif %}>
+                                                {{ model }}
+                                            </option>
+                                            {% endif %}
+                                        {% endfor %}
+                                    </select>
+
+                                    <label class="col-form-label" for="openai_top_p">{{ translations['layout_app_configuration_modal_openai_topp'] }}</label>
+                                    <input id="openai_top_p" class="form-control mb-3" placeholder="{{ translations['layout_app_configuration_modal_placeholder_openai_topp'] }}"
+                                        value="{{ user_data['openai_top_p'] or user_data['default_openai_top_p'] }}">
+
+                                    <label class="col-form-label" for="openai_timeout">{{ translations['layout_app_configuration_modal_openai_timeout'] }}</label>
+                                    <input id="openai_timeout" class="form-control mb-3"
+                                        placeholder="{{ translations['layout_app_configuration_modal_placeholder_openai_timeout'] }}" value="{{ user_data['openai_timeout'] or user_data['default_openai_timeout'] }}">
+
+                                    <div class="checkbox" style="margin-top: 20px;">
+                                        <label for="openai_stream" style="padding: 0;">
+                                            <strong>{{ translations['layout_app_configuration_modal_openai_stream'] }}</strong>
+                                            <input type="checkbox" id="openai_stream" style="margin: 2px 7px;" {% if
+                                                (user_data["openai_stream"] or user_data["default_openai_stream"]) == True %}checked{% endif %}>
+                                        </label>
+                                    </div>
+
+                                </div>
+
+                                <div id="azure_openai_type_section">
+                                    <label class="col-form-label" for="azure_openai_model">{{ translations['layout_app_configuration_modal_azure_openai_model'] }}</label>
+                                    <select class="form-control mb-3" id="azure_openai_model" is="ms-dropdown" style="margin-bottom: 1rem;">
+                                        {% for model in azure_list_models["chat_completion"] %}
+                                            {% if user_data["azure_openai_model"] != '' %}
+                                            <option value="{{ model }}" {% if user_data["azure_openai_model"] == model %}selected{% endif %}>
+                                                {{ model }}
+                                            </option>
+                                            {% else %}
+                                            <option value="{{ model }}" {% if user_data["default_azure_openai_model"] == model %}selected{% endif %}>
+                                                {{ model }}
+                                            </option>
+                                            {% endif %}
+                                        {% endfor %}
+                                        
+                                    </select>
+
+                                    <label class="col-form-label" for="azure_openai_base">{{ translations['layout_app_configuration_modal_azure_openai_base'] }}</label>
+                                    <input id="azure_openai_base" class="form-control mb-3" value="{{ azure_openai_base }}" readonly>
+
+                                    <label class="col-form-label" for="azure_openai_version">{{ translations['layout_app_configuration_modal_azure_openai_version'] }}</label>
+                                    <select class="form-control mb-3" id="azure_openai_version" is="ms-dropdown" style="margin-bottom: 1rem;">
+                                        {% for version in azure_api_version %}
+                                            {% if user_data["azure_openai_apiversion"] != '' %}
+                                            <option value="{{ version }}" {% if user_data["azure_openai_apiversion"] == version %}selected{% endif %}>
+                                                {{ version }}
+                                            </option>
+                                            {% else %}
+                                            <option value="{{ version }}" {% if user_data["default_azure_openai_apiversion"] == version %}selected{% endif %}>
+                                                {{ version }}
+                                            </option>
+                                            {% endif %}
+                                        {% endfor %}
+                                    </select>
+
+                                    <label class="col-form-label" for="azure_openai_maxtokens">{{ translations['layout_app_configuration_modal_azure_openai_max_tokens'] }}</label>
+                                    <input id="azure_openai_maxtokens" class="form-control mb-3"
+                                        placeholder="{{ translations['layout_app_configuration_modal_placeholder_azure_openai_max_tokens'] }}"
+                                        value="{{ user_data['azure_openai_maxtoken'] or user_data['default_azure_openai_maxtoken'] }}">
+
+                                    <label class="col-form-label" for="azure_openai_temperature">{{ translations['layout_app_configuration_modal_azure_openai_temperature'] }}</label>
+                                    <input id="azure_openai_temperature" class="form-control mb-3"
+                                        placeholder="{{ translations['layout_app_configuration_modal_placeholder_azure_openai_temperature'] }}"
+                                        value="{{ user_data['azure_openai_temperature'] or user_data['default_azure_openai_temperature'] }}">
+
+                                    <label class="col-form-label" for="azure_openai_embedded_model">{{ translations['layout_app_configuration_modal_azure_openai_embedded'] }}</label>
+                                    <select class="form-control mb-3" id="azure_openai_embedded_model" is="ms-dropdown" style="margin-bottom: 1rem;">
+                                        {% for model in azure_list_models["embeddings"] %}
+                                            {% if user_data["azure_openai_embedded_model"] != '' %}
+                                            <option value="{{ model }}" {% if user_data["azure_openai_embedded_model"] == model %}selected{% endif %}>
+                                                {{ model }}
+                                            </option>
+                                            {% else %}
+                                            <option value="{{ model }}" {% if user_data["default_azure_openai_embedded_model"] == model %}selected{% endif %}>
+                                                {{ model }}
+                                            </option>
+                                            {% endif %}
+                                        {% endfor %}
+                                    </select>
+
+                                    <label class="col-form-label" for="azure_openai_top_p">{{ translations['layout_app_configuration_modal_azure_openai_topp'] }}</label>
+                                    <input id="azure_openai_top_p" class="form-control mb-3"
+                                        placeholder="{{ translations['layout_app_configuration_modal_placeholder_azure_openai_topp'] }}"
+                                        value="{{ user_data['azure_openai_top_p'] or user_data['default_azure_openai_top_p'] }}">
+
+                                    <label class="col-form-label" for="azure_openai_timeout">{{ translations['layout_app_configuration_modal_azure_openai_timeout'] }}</label>
+                                    <input id="azure_openai_timeout" class="form-control mb-3"
+                                        placeholder="{{ translations['layout_app_configuration_modal_placeholder_azure_openai_timeout'] }}"
+                                        value="{{ user_data['azure_openai_timeout'] or user_data['default_azure_openai_timeout'] }}">
+
+                                    <div class="checkbox" style="margin-top: 20px;">
+                                        <label for="azure_openai_stream" style="padding: 0;">
+                                            <strong>{{ translations['layout_app_configuration_modal_azure_openai_stream'] }}</strong>
+                                            <input type="checkbox" id="azure_openai_stream" style="margin: 2px 7px;" {%
+                                                if (user_data["azure_openai_stream"] or user_data["default_azure_openai_stream"]) == True %}checked{% endif %}>
+                                        </label>
+                                    </div>
+                                </div>
+
+                                <button type="button" id="button_save_openai_changes" class="btn btn-primary-bot"
+                                    style="margin-top: 15px;">{{ translations['layout_app_configuration_modal_save'] }}</button>
+
+                            </div>
+                            
+                            <!-- /.tab-pane -->
+                        </div>
+                        <!-- /.tab-content -->
+                    </div>
+                    <!-- nav-tabs-custom -->
+                </div>
+                <div class="modal-footer">
+                    <button type="button" id="button_close_modal" class="btn btn-default"
+                        data-dismiss="modal">{{ translations['layout_app_configuration_modal_close'] }}</button>
+                </div>
+            </div>
+            <!-- /.modal-content -->
+            <!-- /.modal-dialog -->
+        </div>
+    </div>
+
+    {% block chat_sql_modals %}{% endblock %}
+
+    {% block chat_flow_modals %}{% endblock %}
+
+    {% block chat_oe_modals %}{% endblock %}
+
+    {% block chat_editor_modals %}{% endblock %}
+
+    <div class="modal fade" id="app_about">
+        <div class="modal-dialog modal-sm">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                    <h4 id="title_modal" class="modal-title">About</h4>
+                </div>
+                <div class="modal-body" style="display: flex;">
+                    <div class="col-md-12" style="width: 100%;">
+                        <div>
+                            <span style="font-size: 14px;">Support: David Luque</span>
+                            <br>
+                            <span style="font-size: 14px;">Developer: Jhon Alvarado Achata</span>
+                            <br>
+                            <span style="font-size: 14px;">Environment: Test</span>
+                            <br>
+                            <span style="font-size: 14px;">Version App: {{ version }}</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">{{ translations['layout_app_configuration_modal_close'] }}</button>
+                </div>
+            </div>
+            <!-- /.modal-content -->
+            <!-- /.modal-dialog -->
+
+        </div>
+
+    </div>
+
+    <!-- Modal -->
+    <div id="modal_chat_flow_prompts">
+    </div>
+
+    <!-- Overlay -->
+    <div id="overlay_chat_flow_prompts"></div>
+
+    <div id="messageBox" class="little-message-box">This is a message alert!</div>
+    <div id="staticMessageBox" class="little-message-box">This is a message alert!</div>
+
+    <script src="/static/scripts/jquery-3.6.0.min.js" integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
+    <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.8.0/sql-wasm.js"></script> -->
+    <!-- Bootstrap 3.3.7 -->
+    <script src="/static/bower_components/bootstrap/dist/js/bootstrap.min.js"></script>
+    <script src="/static/scripts/respond.js"></script>
+    <!-- DataTables -->
+    <script src="/static/scripts/datatables/js/jquery.dataTables.min.js"></script>
+    <script src="/static/scripts/datatables/js/dataTables.bootstrap.min.js"></script>
+    <!-- <script src="/static/scripts/datatables/js/datatables.min.js"></script> -->
+    <!-- AdminLTE App -->
+    <script src="/static/dist/js/adminlte.js"></script>
+    <script src="/static/scripts/raphael/raphael.min.js"></script>
+    <script src="/static/scripts/morris.js/morris.min.js"></script>
+    <script src="/static/scripts/markdown-it/markdown-it.min.js"></script>
+    <!-- <script>
+        const md = window.markdownit({
+            breaks: true
+        });
+    </script> -->
+    <script>
+        // Initialize markdown-it with error handling
+        function initializeMarkdownIt() {
+            if (typeof window.markdownit === 'undefined') {
+                console.error('markdown-it not loaded! Check script path and network requests.');
+                return null;
+            }
+            
+            return window.markdownit({
+                breaks: true,
+                html: false,        // Disable HTML tags for security
+                linkify: true,      // Automatically convert URL-like text to links
+                typographer: true   // Enable typographic enhancements
+            });
+        }
+
+        // Global initialization with fallback
+        window.md = initializeMarkdownIt();
+    </script>
+    <script src="/static/scripts/introjs/intro.min.js"></script>
+    <script src="/static/content/js/feature.js"></script>
+    <script src="/static/content/class/markdown_to_csv.js?v={{ version }}"></script>
+    <script src="/static/content/class/chat_history.js?v={{ version }}"></script>
+    <!-- <script src="/static/content/class/content_history_sqlite.js?v={{ version }}"></script> -->
+    <script src="/static/content/class/content_history.js?v={{ version }}"></script>
+    <script src="/static/content/class/thought_history.js?v={{ version }}"></script>
+    <script src="/static/content/js/coockie.js?v={{ version }}"></script>
+    <script src="/static/content/js/tools.js?v={{ version }}"></script>
+    <script src="/static/content/js/notifications.js?v={{ version }}"></script>
+    <script src="/static/content/js/main.js?v={{ version }}"></script>
+    <script src="/static/content/js/print_message.js?v={{ version }}"></script>
+    {% block scripts %}{% endblock %}
+
+</body>
+
+</html>

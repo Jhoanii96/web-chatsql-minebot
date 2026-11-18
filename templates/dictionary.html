@@ -1,0 +1,182 @@
+﻿{% extends "layout.html" %}
+
+{% block header_title %}
+<title>{{ translations['dictionary_subtitle_name'] }}</title>
+{% endblock %}
+
+{% block styles %}
+{% endblock %}
+
+
+{% 
+    set main_permission = (
+        "00000000-0000-0000-0000-000000000000" in user_data['permission'] or 
+        "f581fa62-9659-4240-98c6-a9ef81fec361" in user_data['permission']
+    ) 
+%}
+{% 
+    set openai_permission = (
+        "00000000-0000-0000-0000-000000000000" in user_data['permission'] or 
+        "4a1adc40-2de5-494c-9775-b6b65ebea4f6" in user_data['permission']
+    ) 
+%}
+
+
+{% block chat_sql_leftnavbar %}
+<li id="section_title_name">
+    <div id="title_name">
+        <div>
+            <span><a href="/">{{ translations['chatbot_title_url_home'] }}</a> / {{ translations['dictionary_title_url'] }}</span>
+            <br>
+            <span id="subtitle_name" style="font-size: 18px;font-weight: bold;">{{ translations['dictionary_subtitle_name'] }}</span>
+        </div>
+    </div>
+</li>
+{% endblock %}
+
+{% block chat_sql_rightnavbar %}
+{% if "00000000-0000-0000-0000-000000000000" in user_data['permission'] or
+"26bbff57-7b59-42b0-9e94-8744eb4edf29" in user_data['permission']: %}
+<li id="section_navbar_setting" data-title="{{ translations['layout_app_configuration_modal_title_modal'] }}">
+    <a href="#" data-toggle="modal" data-target="#app_configuration_modal">
+        <div class="navbar_button_icon">
+            <img src="../static/dist/img/icono/Setting_line.svg" alt="Settings" style="width: 12px; ">
+        </div>
+    </a>
+</li>
+{% endif %}
+<!-- User Account: style can be found in dropdown.less -->
+<li class="dropdown user user-menu">
+    <a href="#" class="dropdown-toggle" data-toggle="dropdown">
+        {% if user_data['user_image'] == "": %}
+            <div id="user_profile_image" class="user-profile-image" style="background-color: {{ user_data['profile_color'] }}">{{ user_data['initial_name'] }}</div>
+        {% else %}
+            <div id="user_profile_image" class="user-profile-image" style="background-image: url('{{ user_data['user_image'] }}')"></div>
+        {% endif %}
+        <div class="user_profile_name">
+            <b>{{ user_data['user_name'] + ' ' + user_data['last_name'] }}</b>
+            <br>
+            <span class="hidden-xs">{% if session.get('lang', 'es') == "en": %} {{ user_data['role_name_en'] }} {% else %} {{ user_data['role_name_es'] }} {% endif %}</span>
+        </div>
+    </a>
+    <ul class="dropdown-menu">
+        <!-- User image -->
+        <li class="user-header">
+            <!-- <img src="../static/dist/img/sqlv7/Ellipse 1.svg" class="img-circle" alt="User Image"> -->
+            {% if user_data['user_image'] == "": %}
+                <div id="user_profile_image" class="user-header-profile-image" style="background-color: {{ user_data['profile_color'] }}">{{ user_data['initial_name'] }}</div>
+            {% else %}
+                <div id="user_profile_image" class="user-header-profile-image" style="background-image: url('{{ user_data['user_image'] }}')"></div>
+            {% endif %}
+            <p>
+                {{ user_data['user_name'] + ' ' + user_data['last_name'] }}
+                <small>{{ translations['user_profile_member_since'] }} {{ user_data['created_at'] }} [{{ version }}]</small>
+            </p>
+        </li>
+        <!-- Menu Footer-->
+        <li class="user-footer">
+            <div class="pull-left" style="display: none;">
+                <a href="#" class="btn btn-primary-bot btn-flat">{{ translations['user_profile_profile'] }}</a>
+            </div>
+            <div class="pull-right">
+                <a href="/logout" class="btn btn-primary-bot btn-flat">{{ translations['user_profile_logout'] }}</a>
+            </div>
+        </li>
+    </ul>
+</li>
+{% endblock %}
+
+
+{% block content %}
+<div class="col-xs-12" style="height: calc(100vh - 10vh);">
+    <h2 style="text-align: center;">{{ translations['dictionary_main_title'] }}</h2>
+    <div id="sql_tablename">
+        <label class="col-form-label" id="label_sqltable" for="table_name" style="margin: 0;">{{ translations['dictionary_table_name'] }}</label>
+        <select class="form-control dictionary-table-name" id="table_name" style="width: auto;">
+            <option value="-1">{{ translations['chatbot_select'] }}</option>
+        {% for group, tables in sql_list|groupby('table_group') %}
+            <optgroup label="{{ group if group else 'No Group' }}">
+                {% for t in tables %}
+                <option value="{{ t.id }}" 
+                        title="{{ 'Table: ' + t.source_table + '\n' + 'Description: ' + t.table_description }}" 
+                        data-secret="{{ t.secrets }}" data-source="{{ t.source_table }}">
+                    {{ t.table_name }} | {{ '(' + t.source_table + ')' }}
+                </option>
+                {% endfor %}
+            </optgroup>
+        {% endfor %}
+        </select>
+    </div>
+    <div style="margin-bottom: 12px;display: flex;align-items: center;">
+        <label style="margin: 0;">{{ translations['dictionary_label_language_description'] }}</label>
+        <select class="small-button" id="dictionary_language_description" style="width: auto;padding: 5px 10px;margin: 0px 5px;">
+            <option value="English" {% if session.get('lang', 'es')=='en' %}selected{% endif %}>{{ translations['chatbot_language_english'] }}</option>
+            <option value="Spanish" {% if session.get('lang', 'es')=='es' %}selected{% endif %}>{{ translations['chatbot_language_spanish'] }}</option>
+        </select>
+    </div>
+    <div id="dictionary-button-actions">
+        <button type="button" id="button_generate_dictionary" class="btn btn-primary-bot small-button">{{ translations['dictionary_generate_dictionary'] }}</button>
+        <button type="button" id="button_save_all" class="btn btn-primary-bot small-button">{{ translations['chatbot_save_button'] }}</button>
+        <button type="button" id="button_add_row" onclick="addRowBelow()" class="btn btn-primary-bot small-button">{{ translations['chatflow_flow_modal_add_row'] }}</button>
+        <button type="button" id="button_refresh" class="btn btn-primary-bot small-button" style="float: right;">{{ translations['chatbot_refresh_button'] }}</button>
+    </div>
+    
+    <div id="box_table_dictionary" class="box" style="overflow: auto;border: none;height: 400px;margin-top: 20px;">
+        <table id="tableDictionary" class="table table-format table-striped" style="text-align: left;">
+            <thead>
+                <tr>
+                    <th style="width: 50px;">{{ translations['dictionary_table_header_id'] }}</th>
+                    <th style="width: 150px;min-width: 150px;">{{ translations['dictionary_table_header_column_name'] }}</th>
+                    <th style="width: 100px;min-width: 100px;">{{ translations['dictionary_table_header_data_type'] }}</th>
+                    <th style="min-width: 250px;">{{ translations['dictionary_table_header_description'] }}</th>
+                    <th style="min-width: 250px;">{{ translations['dictionary_table_header_example'] }}</th>
+                    <th style="width: 100px;min-width: 100px;">{{ translations['dictionary_table_header_select_date'] }}</th>
+                    <th style="width: 150px;min-width: 150px;">{{ translations['dictionary_table_header_updated_at'] }}</th>
+                    <th style="width: 80px;min-width: 80px;">{{ translations['dictionary_table_header_action'] }}</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+        <div id="overlay_dictionary_table" class="overlay">
+            <i class="fa fa-refresh fa-spin"></i>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+
+{% block app_configuration_tabs %}
+
+{% if main_permission %}
+<li class="active"><a href="#main" data-toggle="tab">{{ translations['layout_app_configuration_modal_main'] }}</a></li>
+{% endif %}
+
+{% if openai_permission %}
+<li><a href="#openai" data-toggle="tab">{{ translations['layout_app_configuration_modal_openai'] }}</a></li>
+{% endif %}
+
+{% endblock %}
+
+
+{% block app_configuration_main %}
+<div class="tab-pane {% if main_permission %}active{% endif %}" id="main" {% if main_permission == False %}style="display: none;"{% endif %}>
+    <div id="section_configuration_dictionary">
+        <div class="mb-3">
+            <label class="col-form-label" for="dictionary_user_prompt">{{ translations['dictionary_app_configuration_modal_user_prompt'] }}</label>
+            <div style="min-height: 40px;">
+                <textarea id="dictionary_user_prompt" class="form-control" rows="10"
+                    autocomplete="off" style="font-size: 12px;" {% if main_permission == False %}disabled{% endif %}>{{ user_data['dictionary_user_prompt'] or user_data['default_dictionary_description_prompt'] }}</textarea>
+            </div>
+        </div>
+    </div>
+    {% if main_permission %}
+    <button type="button" id="button_save_main_changes" class="btn btn-primary-bot" style="margin-top: 15px;">{{ translations['layout_app_configuration_modal_save'] }}</button>
+    {% endif %}
+</div>
+{% endblock %}
+
+
+
+{% block scripts %}
+<script src="{{url_for('static',filename='content/js/dictionary.js')}}?v={{ version }}"></script>
+{% endblock %}

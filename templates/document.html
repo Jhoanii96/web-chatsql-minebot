@@ -1,0 +1,141 @@
+{% extends "layout.html" %}
+
+{% block header_title %}
+<title>{{ translations['documents_subtitle_name'] }}</title>
+{% endblock %}
+
+{% block documents_leftnavbar %}
+<li id="section_title_name">
+    <div id="title_name">
+        <div>
+            <span><a href="/">{{ translations['chatbot_title_url_home'] }}</a> / {{ translations['documents_title_url_chat'] }}</span>
+            <br>
+            <span id="subtitle_name" style="font-size: 18px;font-weight: bold;">{{ translations['documents_subtitle_name'] }}</span>
+        </div>
+    </div>
+</li>
+{% endblock %}
+{% block documents_rightnavbar %}
+<li id="section_navbar_documenttype">
+    <div>
+        <label class="col-form-label" for="type_uploaded_file" style="margin: 0;font-weight: normal;">{{ translations['documents_type_uploaded_file'] }}</label>
+        <select class="form-control" id="type_uploaded_file" style="width: 200px;">
+            <option value="files" selected="selected">{{ translations['documents_option_uploaded_files'] }}</option>
+            <option value="url">{{ translations['documents_option_uploaded_url'] }}</option>
+        </select>
+    </div>
+</li>
+{% endblock %}
+
+{% block content %}
+<div class="col-xs-12">
+    <div id="document-panel">
+        <div id="left-panel" class="col-xs-8" style="padding-top: 25px;">
+            <div class="col-xs-12">
+                <div style="margin-bottom: 10px;">
+                    <span id="upload_label" style="font-weight: bold;">{{ translations['documents_label_upload_file'] }}</span>
+                </div>
+                <div style="width: 95%; margin-top: 15px; margin-left: auto; margin-right: auto;">
+
+                    <div id="block_url" class="form-group" style="display: none;">
+                        <label for="input_url_path" style="font-weight: normal;">{{ translations['documents_input_url_path'] }}</label>
+                        <input type="text" id="input_url_path" class="form-control" style="width: 100%;" value="">
+                    </div>
+
+                    <div class="dropzone" id="dropzone">
+                        <span id="dropzone-text">{{ translations['documents_dropzone_text'] }}</span>
+                    </div>
+                    <input type="file" id="FilesUpload" accept=".pdf, .xlsx, .docx, .csv, .pptx"
+                        style="display: none; ">
+                    <!--<div class="separator"></div>-->
+                    <div id="block_excel_sheets" class="form-group" style="display: none;">
+                        <label for="excel_sheets" style=" font-weight: normal;">{{ translations['documents_excel_sheets'] }}</label>
+                        <select class="form-control" id="excel_sheets" style="width: 200px;">
+                            <option value="-" selected="selected">{{ translations['documents_excel_sheets_select'] }}</option>
+                        </select>
+                    </div>
+
+                    <div id="block_blob_container" class="form-group">
+                        <label for="blob_container" style=" font-weight: normal;">{{ translations['documents_blob_container'] }}</label>
+                        <div style="display: flex;">
+                            <select class="form-control" id="blob_container" style="width: 200px;">
+                                <option value="-" selected="selected">{{ translations['documents_blob_container_select'] }}</option>
+                            </select>
+                            <button type="button" class="btn btn-primary-bot" id="btn_load_container" style="margin-left: 5px;">{{ translations['chatbot_refresh_button'] }}</button>
+                        </div>
+                    </div>
+                    <div id="block_blob_path" class="form-group">
+                        <label for="blob_path" style=" font-weight: normal;">{{ translations['documents_blob_path'] }}</label>
+                        <input type="text" id="blob_path" class="form-control" style="width: 75%;" placeholder="ChatGPT/Files/PDF">
+                    </div>
+                    <div id="block_blob_path" class="form-group">
+                        <label for="file_name" style="font-weight: normal; ">{{ translations['documents_file_name'] }}</label>
+                        <input type="text" id="file_name" class="form-control" style="width: 75%;"
+                            placeholder="{{ translations['documents_placeholder_file_name'] }}" value="">
+                    </div>
+
+
+                    <div style="color: black;padding-top: 5px;padding-bottom: 15px;">
+                        <label for="metadataTable">{{ translations['documents_metadata_table'] }}</label>
+                        <table class="table table-format table-striped" id="metadataTable" style="width: 400px;margin-bottom: 20px;">
+                            <thead>
+                                <tr>
+                                    <th>{{ translations['documents_metadata_table_header_key'] }}</th>
+                                    <th>{{ translations['documents_metadata_table_header_value'] }}</th>
+                                    <th>{{ translations['documents_metadata_table_header_action'] }}</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                            <tbody>
+                                <tr>
+                                    <td><input class="document-table-column-input-row" type="text" placeholder="{{ translations['documents_metadata_table_placeholder_key'] }}" value="Page Number" disabled></td>
+                                    <td><input class="document-table-column-input-row" type="text" placeholder="{{ translations['documents_metadata_table_placeholder_value'] }}" value="{pagenum}"></td>
+                                    <td><button class="button-action-table" onclick="deleteRowMetadata(this)"><i class="fa fa-fw fa-trash-o"></i></button></td>
+                                </tr>
+                                <tr>
+                                    <td><input class="document-table-column-input-row" type="text" placeholder="{{ translations['documents_metadata_table_placeholder_key'] }}" value="File Name" disabled></td>
+                                    <td><input class="document-table-column-input-row" type="text" placeholder="{{ translations['documents_metadata_table_placeholder_value'] }}" value="{filename}"></td>
+                                    <td><button class="button-action-table" onclick="deleteRowMetadata(this)"><i class="fa fa-fw fa-trash-o"></i></button></td>
+                                </tr>
+                            </tbody>
+                            </tbody>
+                        </table>
+                        <button class="btn-primary-bot small-button" onclick="addRowMetadata()">{{ translations['documents_metadata_table_add_row'] }}</button>
+                    </div>
+
+
+
+                    <div>
+                        <button type="button" id="btn_upload_document" class="btn btn-primary-bot"
+                            style="margin: 0;">{{ translations['documents_upload_file'] }}</button>
+                    </div>
+                    <div style="margin: 15px 0;">
+                        <span style="font-weight: bold;">{{ translations['chatbot_label_response'] }}</span>
+                        <div class="document-block-response">
+                            <span id="response" class="document-response"></span>
+                        </div>
+                    </div>
+
+                </div>
+
+
+            </div>
+        </div>
+        <div id="right-panel" class="col-xs-4" style="padding-top: 25px;padding-bottom: 25px;">
+            <span style="font-weight: bold;">
+                {{ translations['documents_files_uploaded'] }}
+            </span>
+            <div id="block_files_pdf" class="text-line"
+                style="display: block; width: 60px; min-height: 20px; overflow: auto;"></div>
+        </div>
+    </div>
+
+</div>
+
+{% endblock %}
+
+
+{% block scripts %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.3/xlsx.full.min.js"></script>
+<script src="/static/content/js/document.js?v={{ version }}"></script>
+{% endblock %}

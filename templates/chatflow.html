@@ -1,0 +1,774 @@
+﻿{% extends "layout.html" %}
+
+{% block header_title %}
+<title>{{ translations['chatflow_subtitle_name'] }}</title>
+{% endblock %}
+
+{% 
+    set flow_new_permission = (
+        "00000000-0000-0000-0000-000000000000" in user_data['flow_permissions'] or 
+        "11111111-1111-1111-1111-111111111111" in user_data['flow_permissions']
+    ) 
+%}
+{% 
+    set edit_table_permission = (
+        "00000000-0000-0000-0000-000000000000" in user_data['flow_permissions'] or 
+        "44444444-4444-4444-4444-444444444444" in user_data['flow_permissions']
+    ) 
+%}
+
+{% block styles %}
+<style id="blink-d5afa192-add8-4a9e-b714-a18786892ee4" data-anikit="">
+    @keyframes blink-d5afa192-add8-4a9e-b714-a18786892ee4 {
+        0% {
+            opacity: 1;
+        }
+
+        49.75% {
+            opacity: 1;
+        }
+
+        50.25% {
+            opacity: 0;
+        }
+
+        99.5% {
+            opacity: 0;
+        }
+
+        100% {
+            opacity: 1;
+        }
+    }
+    /* Estilos personalizados para la etiqueta de párrafo generado por marked */
+    .markdown-content p {
+        color: #a21010; /* Color del texto */
+        font-size: 16px; /* Tamaño de fuente */
+        line-height: 1.5; /* Altura de línea */
+        margin-bottom: 15px; /* Margen inferior */
+    }
+</style>
+<script type="text/javascript">
+    window.flow_new_permission = '{{ flow_new_permission }}'; 
+    window.edit_table_permission = '{{ edit_table_permission }}'; 
+</script>
+{% endblock %}
+
+{% block header_scripts %}
+<!-- Include Select2 CSS and JS -->
+<link rel="stylesheet" href="/static/scripts/choices.js/css/choices.min.css" />
+<script src="/static/scripts/xlsx/js/xlsx.full.min.js"></script>
+<script src="/static/scripts/chart.js/js/chart.js"></script>
+<script src="/static/scripts/chart.js/js/chartjs-adapter-date-fns.js"></script>
+{% endblock %}
+
+
+{% 
+    set navbar_setting = (
+        "00000000-0000-0000-0000-000000000000" in user_data['permission'] or 
+        "68ab7908-a674-4091-a494-7d66489e2bf8" in user_data['permission']
+    ) 
+%}
+{% 
+    set main_permission = (
+        "00000000-0000-0000-0000-000000000000" in user_data['permission'] or 
+        "8c77302f-f4ad-4869-89d8-2a680e3c8e0b" in user_data['permission']
+    ) 
+%}
+{% 
+    set openai_permission = (
+        "00000000-0000-0000-0000-000000000000" in user_data['permission'] or 
+        "f9b2a971-dd34-4ea9-a6fb-4d0c9c193b25" in user_data['permission']
+    ) 
+%}
+
+{% 
+    set flow_edit_permission = (
+        "00000000-0000-0000-0000-000000000000" in user_data['flow_permissions'] or 
+        "22222222-2222-2222-2222-222222222222" in user_data['flow_permissions']
+    ) 
+%}
+{% 
+    set flow_delete_permission = (
+        "00000000-0000-0000-0000-000000000000" in user_data['flow_permissions'] or 
+        "33333333-3333-3333-3333-333333333333" in user_data['flow_permissions']
+    ) 
+%}
+
+
+{% block chat_flow_leftnavbar %}
+<li id="section_title_name">
+    <div id="title_name">
+        <div>
+            <span><a href="/">{{ translations['chatbot_title_url_home'] }}</a> / {{ translations['chatflow_title_url_chat'] }}</span>
+            <br>
+            <span id="subtitle_name" style="font-size: 18px;font-weight: bold;">{{ translations['chatflow_subtitle_name'] }}</span>
+        </div>
+    </div>
+</li>
+{% endblock %}
+
+{% block chat_flow_rightnavbar %}
+<!--
+<li id="section_navbar_sqltest" {% if WEB_APP_VERSION=='Lite' %}style="display: none;"{% endif %}>
+    <a href="#" data-toggle="modal" data-target="#chat_flow_sqltest_modal">
+        <div class="navbar_button_icon">
+            <img src="../static/dist/img/icono/icons4.svg" alt="Settings SQL" style="width: 12px;">
+        </div>
+    </a>
+</li>
+-->
+<li id="section_phase_name" style="display: none;margin: 0px 5px;">
+    <div>
+        <span>{{ translations['chatflow_flow_modal_phase_name'] }}</span>&nbsp;:&nbsp;
+        <span id="span_phase_name"></span>
+    </div>
+</li>
+<li id="section_navbar_chatflow" data-title="{{ translations['chatflow_flow_modal_title'] }}">
+    <a href="#" data-toggle="modal" data-target="#chat_flow_modal">
+        <div class="navbar_button_icon">
+            <img src="../static/dist/img/icono/tournament.svg" alt="Settings Flow" style="width: 12px;">
+        </div>
+    </a>
+</li>
+{% if navbar_setting %}
+<li id="section_navbar_setting" data-title="{{ translations['layout_app_configuration_modal_title_modal'] }}">
+    <a href="#" data-toggle="modal" data-target="#app_configuration_modal">
+        <div class="navbar_button_icon">
+            <img src="../static/dist/img/icono/Setting_line.svg" alt="Settings" style="width: 12px;">
+        </div>
+    </a>
+</li>
+{% endif %}
+<!-- User Account: style can be found in dropdown.less -->
+<li class="dropdown user user-menu">
+    <a href="#" class="dropdown-toggle" data-toggle="dropdown">
+        {% if user_data['user_image'] == "": %}
+            <div id="user_profile_image" class="user-profile-image" style="background-color: {{ user_data['profile_color'] }}">{{ user_data['initial_name'] }}</div>
+        {% else %}
+            <div id="user_profile_image" class="user-profile-image" style="background-image: url('{{ user_data['user_image'] }}')"></div>
+        {% endif %}
+        <div class="user_profile_name">
+            <b>{{ user_data['user_name'] + ' ' + user_data['last_name'] }}</b>
+            <br>
+            <span class="hidden-xs">{% if session.get('lang', 'es') == "en": %} {{ user_data['role_name_en'] }} {% else %} {{ user_data['role_name_es'] }} {% endif %}</span>
+        </div>
+    </a>
+    <ul class="dropdown-menu">
+        <!-- User image -->
+        <li class="user-header">
+            <!-- <img src="../static/dist/img/sqlv7/Ellipse 1.svg" class="img-circle" alt="User Image"> -->
+            {% if user_data['user_image'] == "": %}
+                <div id="user_profile_image" class="user-header-profile-image" style="background-color: {{ user_data['profile_color'] }}">{{ user_data['initial_name'] }}</div>
+            {% else %}
+                <div id="user_profile_image" class="user-header-profile-image" style="background-image: url('{{ user_data['user_image'] }}')"></div>
+            {% endif %}
+            <p>
+                {{ user_data['user_name'] + ' ' + user_data['last_name'] }}
+                <small>{{ translations['user_profile_member_since'] }} {{ user_data['created_at'] }} [{{ version }}]</small>
+            </p>
+        </li>
+        <!-- Menu Footer-->
+        <li class="user-footer">
+            <div class="pull-left" style="display: none;">
+                <a href="#" class="btn btn-primary-bot btn-flat">{{ translations['user_profile_profile'] }}</a>
+            </div>
+            <div class="pull-right">
+                <a href="/logout" class="btn btn-primary-bot btn-flat">{{ translations['user_profile_logout'] }}</a>
+            </div>
+        </li>
+    </ul>
+</li>
+
+{% endblock %}
+
+
+
+
+
+
+
+
+
+
+
+{% block chat_flow_modals %}
+<div class="modal fade" id="chat_flow_sqltest_modal">
+    <div id="modal-chat-large" class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+                <h4 id="title_modal" class="modal-title">{{ translations['chatflow_sqlquery_modal_title'] }}</h4>
+            </div>
+            <div class="modal-body" style="display: flex;">
+                <div class="col-md-12" style="width: 100%;">
+                    <div>
+                        <label class="col-form-label" for="sql_incident_option">{{ translations['chatflow_sqlquery_modal_event_title'] }}</label>
+                        <select class="form-control" id="sql_incident_option" style="width: auto;margin-bottom: 5px;">
+                            <option value="-1" selected="selected">{{ translations['chatflow_sqlquery_modal_event_title_select'] }}</option>
+                        {% for item in title_data %}
+                            <option value="{{ item.id }}">{{ item.title_incident }}</option>
+                        {% endfor %}
+                        </select>
+                        <label class="col-form-label" for="sql_object_option">{{ translations['chatflow_sqlquery_modal_object'] }}</label>
+                        <div class="input-group">
+                            <select class="form-control" id="sql_object_option" style="width: 250px;margin-bottom: 5px;">
+                                <option value="-" selected="selected">{{ translations['chatflow_sqlquery_modal_object_select'] }}</option>
+                            </select>
+                            <input class="form-control" id="sql_object_name" style="width: 250px;margin-bottom: 5px;" placeholder="{{ translations['chatflow_sqlquery_modal_placeholder_object_name'] }}" title="{{ translations['chatflow_sqlquery_modal_placeholder_object_name'] }}">
+                            <input class="form-control" id="sql_tag_name" style="width: 150px;margin-bottom: 5px;" placeholder="{{ translations['chatflow_sqlquery_modal_placeholder_tag_name'] }}" title="{{ translations['chatflow_sqlquery_modal_placeholder_tag_name'] }}">
+                        </div>
+                        <label class="col-form-label" for="sql_server_connection">{{ translations['chatflow_sqlquery_modal_sql_server'] }}</label>
+                        <select class="form-control" id="sql_server_connection" style="width: 250px;">
+                            <option value="-" selected="selected">{{ translations['chatflow_sqlquery_modal_sql_server_select'] }}</option>
+                        {% for item in sql_secrets %}
+                            <option value="{{ item.secrets }}">{{ item.database_description }}</option>
+                        {% endfor %}
+                        </select>
+                        
+                        <pre style="margin: 10px 0;"><code id="sql_input_query" class="language-sql" contenteditable="true" style="outline: none; background: white; padding: 5px;" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"></code></pre>
+                        
+                        <div>
+                            <button class="btn btn-default" id="sql_btn_execute" style="margin-top: 5px; margin-bottom: 5px;">
+                                <i class="fa fa-play" style="color: green"></i> {{ translations['chatflow_sqlquery_modal_execute_button'] }} 
+                            </button>
+                            <button class="btn btn-primary-bot" id="sql_btn_save" style="margin-top: 5px; margin-bottom: 5px; float: right;">
+                                {{ translations['chatflow_sqlquery_modal_save_query_button'] }}
+                            </button>
+                        </div>
+
+                        <div id="sql_result_table_executed" style="overflow: auto;width: 100%;max-height: 300px; margin: 10px 0;">
+                            <table class="table table-striped" id="sql_result_table">
+                            </table>
+                        </div>
+                        <div style="display: flex;"><span id="sql_text_info"></span></div>
+                        
+                        <div id="sql_sensors_chartline" class="box-body chart-responsive" style="width: 100%;max-height: 250px;display:none;">
+                            <div class="chart" id="line-chart" style="height: 250px;width:100%"></div>
+                        </div>
+                        
+                        
+                        
+                    </div>
+
+
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" id="button_close_sqlstrconn" class="btn btn-default" data-dismiss="modal">{{ translations['chatbot_close_button'] }}</button>
+            </div>
+        </div>
+        <!-- /.modal-content -->
+        <!-- /.modal-dialog -->
+
+    </div>
+
+</div>
+
+<div class="modal fade" id="chat_flow_modal" style="overflow-y: auto;">
+    <div id="modal-chat-large" class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+                <div>
+                    <h4 id="title_modal" class="modal-title" style="display: inline-block;">{{ translations['chatflow_flow_modal_title'] }}</h4>
+                    <button type="button" class="btn-transparent" style="font-size: 18px;display: inline-block;" onclick="chatflow_workflow_features()"><i class="fa fa-question-circle"></i></button>
+                </div>
+            </div>
+            <div class="modal-body" style="display: flex;padding-top: 0;">
+                <div class="col-md-12" style="width: 100%;">
+                    <h5>{{ translations['chatflow_flow_modal_phase_groups'] }}</h5>
+                    <div id="block_phase_category" style="margin: 5px 0px;display: flex;align-items: center;">
+                        <label for="select_phase_category" style="margin: 0px 5px 0px 0px;">{{ translations['chatflow_flow_modal_group_category'] }}</label>
+                        <select id="select_phase_category" class="form-control input-new-design">
+                            <option value="-">{{ translations["chatbot_select"] }}</option>
+                            <!-- Initial options -->
+                            {% for item in category_data %}
+                                <option value="{{ item.id }}">{{ item.name }}</option>
+                            {% endfor %}
+                        </select>
+                        <input id="input_phase_category" class="form-control input-new-design" style="display: none;">
+                        {% if flow_edit_permission %}
+                        <button class="button-action-table" id="btn_update_category" style="display: none;" onclick="update_sqlcategory_data()"><i class="fa fa-fw fa-edit"></i></button>
+                        <button class="button-action-table" id="btn_save_category" style="display: none;" onclick="save_sqlcategory_data()"><i class="fa fa-fw fa-check"></i></button>
+                        <button class="button-action-table" id="btn_cancel_category" style="display: none;" onclick="cancel_sqlcategory_data()"><i class="fa fa-fw fa-remove"></i></button>
+                        {% endif %}
+                        {% if flow_delete_permission %}
+                        <button class="button-action-table" id="btn_delete_category" style="display: none;" onclick="delete_sqlcategory_data()"><i class="fa fa-fw fa-trash-o"></i></button>
+                        {% endif %}
+                        <div id="loading_phase_category"></div>
+                    </div>
+                    <div id="block_phase_name" style="margin: 5px 0px;display: flex;align-items: center;">
+                        <label for="select_phase_name" style="margin: 0px 5px 0px 0px;">{{ translations['chatflow_flow_modal_phase_name'] }}</label>
+                        <select id="select_phase_name" class="form-control input-new-design">
+                            <option value="-">{{ translations["chatbot_select"] }}</option>
+                        </select>
+                        <input id="input_phase_name" class="form-control input-new-design" style="display: none;">
+                        {% if flow_edit_permission %}
+                        <button class="button-action-table" id="btn_favorite_phasename" style="display: none;" onclick="update_favorite_name_data(this)"><i class="fa fa-fw fa-star-o"></i></button>
+                        <button class="button-action-table" id="btn_comment_phasename" style="display: none;" onclick="openCommentPrompt(this)"><i class="fa fa-fw fa-sticky-note-o"></i></button>
+                        <button class="button-action-table" id="btn_update_phasename" style="display: none;" onclick="update_sqlphase_name_data()"><i class="fa fa-fw fa-edit"></i></button>
+                        <button class="button-action-table" id="btn_save_phasename" style="display: none;" onclick="save_sqlphase_name_data()"><i class="fa fa-fw fa-check"></i></button>
+                        <button class="button-action-table" id="btn_cancel_phasename" style="display: none;" onclick="cancel_sqlphase_name_data()"><i class="fa fa-fw fa-remove"></i></button>
+                        <button class="button-action-table" id="btn_duplicate_phasename" style="display: none;" onclick="duplicate_sqlphase_name_data(this)"><i class="fa fa-clone"></i></button>
+                        {% endif %}
+                        {% if flow_delete_permission %}
+                        <button class="button-action-table" id="btn_delete_phasename" style="display: none;" onclick="delete_sqlphase_name_data()"><i class="fa fa-fw fa-trash-o"></i></button>
+                        {% endif %}
+                        <div id="loading_phase_name"></div>
+                    </div>
+                    <hr>
+                    <h5>{{ translations['chatflow_flow_modal_parameters'] }}</h5>
+                    <div id="block_parameters" style="margin: 5px 0px;display: flex;align-items: center;">
+                        <label for="input_equipment" style="margin: 0;">{{ translations['chatflow_flow_modal_equipment'] }}</label>
+                        <div style="width: auto;margin: 0px 5px;">
+                            <select id="input_equipment" class="form-control input-new-design">
+                                <option value="-">{{ translations["chatbot_select"] }}</option>
+                                <!-- Initial options -->
+                                {% for item in equipments %}
+                                    <option value="{{ item.name }}" title="Type: {{ item.type }}">{{ item.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        
+                        <label for="input_start_date" style="margin: 0;">{{ translations['chatflow_flow_modal_startdate'] }}</label>
+                        <input type="date" id="input_start_date" class="form-control" min="2000-01-01" style="width: auto;margin: 0px 5px;">
+                        <label for="input_end_date" style="margin: 0;">{{ translations['chatflow_flow_modal_enddate'] }}</label>
+                        <input type="date" id="input_end_date" class="form-control" min="2000-01-01" style="width: auto;margin: 0px 5px;">
+                        
+                        <label for="input_start_time" style="margin: 0;">{{ translations['chatflow_flow_modal_starttime'] }}</label>
+                        <input type="time" id="input_start_time" class="form-control" style="width: auto;margin: 0px 5px;">
+                        <label for="input_end_time" style="margin: 0;">{{ translations['chatflow_flow_modal_endtime'] }}</label>
+                        <input type="time" id="input_end_time" class="form-control" style="width: auto;margin: 0px 5px;">
+                        
+                        <button type="button" id="button_sql_system_prompt" class="btn btn-primary-bot" style="width: auto;margin: 0px 5px;" onclick="openSqlSystemPrompt(this)">{{ translations['chatflow_flow_modal_sqlsystem'] }}</button>
+                        <button type="button" id="button_question_system_prompt" class="btn btn-primary-bot" style="width: auto;margin: 0px 5px;display: none;" onclick="openQuestionSystemPrompt(this)">Sql Question System</button>
+                        <button type="button" id="button_final_question_prompt" class="btn btn-primary-bot" style="width: auto;margin: 0px 5px;" onclick="openFinalQuestionPrompt(this)">{{ translations['chatflow_flow_modal_finalquestion'] }}</button>
+                    </div>
+                    <div style="margin: 5px 0px;display: flex;align-items: center;">
+                        <label for="input_doc_title" style="margin: 0;">Report title</label>
+                        <input id="input_doc_title" class="form-control" style="width: auto;min-width: 400px;margin: 0px 5px;">
+                    </div>
+                    <hr>
+                    <h5>{{ translations['chatflow_flow_modal_existing_records'] }}</h5>
+                    <div id="section_phase_table">
+                        <div class="box" style="overflow: auto;border: none;min-height: 125px;">
+                            <table class="table table-format table-striped" id="PhaseTable">
+                                <thead>
+                                    <tr>
+                                        <th style="min-width: 50px;">{{ translations['chatflow_flow_modal_table_header_id'] }}</th>
+                                        <th style="min-width: 300px;">{{ translations['chatflow_flow_modal_table_header_sql_prompt'] }}</th>
+                                        <th style="min-width: 325px;display: none;">{{ translations['chatflow_flow_modal_table_header_documents'] }}</th>
+                                        <th style="min-width: 200px;display: none;">{{ translations['chatflow_flow_modal_table_header_documents_options'] }}</th>
+                                        <th style="min-width: 250px;">{{ translations['chatflow_flow_modal_table_header_openai_models'] }}</th>
+                                        <th style="min-width: 75px;">{{ translations['chatflow_flow_modal_table_header_report'] }}</th>
+                                        {% if edit_table_permission %}
+                                        <th style="min-width: 110px;">{{ translations['chatflow_flow_modal_table_header_actions'] }}</th>
+                                        {% endif %}
+                                    </tr>
+                                </thead>
+                                <tbody>
+
+                                </tbody>
+                            </table>
+                            <div id="overlay_phase_table" class="overlay">
+                                <i class="fa fa-refresh fa-spin"></i>
+                            </div>
+                        </div>
+                        {% if edit_table_permission %}
+                        <button id="btn_add_row_below" class="btn btn-primary-bot small-button" onclick="addRowBelow()" disabled>{{ translations['chatflow_flow_modal_add_row'] }}</button>
+                        {% endif %}
+                        <button id="btn_load_phases_table" class="btn btn-primary-bot small-button" onclick="load_phases_table()" disabled>{{ translations['chatflow_flow_modal_refresh_table'] }}</button>
+                        
+                    </div>
+
+                </div>
+            </div>
+            {% if edit_table_permission %}
+            <div class="modal-footer">
+                <!-- <button type="button" id="button_close_phases" class="btn btn-default pull-left" data-dismiss="modal">Close</button> -->
+                <button type="button" id="button_save_phases" class="btn btn-primary-bot">{{ translations['chatflow_flow_modal_save_changes'] }}</button>
+            </div>
+            {% endif %}
+        </div>
+        <!-- /.modal-content -->
+        <!-- /.modal-dialog -->
+
+    </div>
+
+</div>
+
+<div class="modal fade" id="document_show_prompts_modal" style="overflow: auto;">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+                <h4 class="modal-title">Logs</h4>
+            </div>
+            <div class="modal-body" style="display: flex;flex-direction: column;">
+
+                <div class="nav-tabs-custom">
+                    <ul class="nav nav-tabs">
+                        <li class="active"><a href="#tokens-usage-tab" data-toggle="tab">Detalle de prompts</a></li>
+                        <li><a href="#step-analysis-tab" data-toggle="tab">Step Analysis</a></li>
+                        <li><a href="#error-logs-tab" data-toggle="tab">Data no procesada</a></li>
+                    </ul>
+                </div>
+
+                <div class="tab-content">
+                    <div class="tab-pane active" id="tokens-usage-tab">
+                        <section class="col-md-12" id="section-prompts" style="margin-top: 15px;"></section>
+                    </div>
+                    <div class="tab-pane" id="step-analysis-tab">
+                        <div class="step-analysis-container" id="step-analysis"></div>
+                    </div>
+                    <div class="tab-pane" id="error-logs-tab">
+                        <div class="error-logs-container" id="error-logs"></div>
+                    </div>
+                </div>
+                
+            
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-primary-bot" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div style="display: none;">
+    <select class="elements-table" id="list_sql_tables_{row_id}">
+        <option value="-1"
+            data-secrets="" data-source="">
+            {{ translations['chatflow_mode_question'] }}
+        </option>
+        
+        {% for group, tables in sql_tables|groupby('table_group') %}
+            <optgroup label="{{ group if group else 'No Group' }}">
+                {% for t in tables %}
+                    <option value="{{ t.id }}" 
+                        title="{{ 'Table: ' + t.source_table }}{{ '\nDescription: ' + t.table_description }}"
+                        data-secrets="{{ t.secrets }}" data-source="{{ t.source_table }}">
+                        {{ t.table_name }}{{ ' (' + translations['chatbot_updated_at'] + ' ' + t.last_data_updated + ')' if t.last_data_updated else '' }}
+                    </option>
+                {% endfor %}
+            </optgroup>
+        {% endfor %}
+    </select>
+</div>
+
+
+
+<div class="modal fade" id="flow_sql_system_prompt_modal" style="overflow: auto;">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+                <h4 class="modal-title">Sql Prompt</h4>
+            </div>
+            <div class="modal-body" style="display: flex;flex-direction: column;">
+                <div class="col-md-12">
+                    <textarea id="flow_sql_system_prompt_input" rows="25" style="width: 100%;"></textarea>
+                    <div class="print-options" style="float: right;">
+                        <div class="actions">
+                            <button class="btn btn-primary-bot" onclick="saveSqlSystemPrompt(this)">Save</button>
+                            <button class="btn btn-primary-bot cancel" data-dismiss="modal">Cancel</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="flow_question_system_prompt_modal" style="overflow: auto;">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+                <h4 class="modal-title">Question Prompt</h4>
+            </div>
+            <div class="modal-body" style="display: flex;flex-direction: column;">
+                <div class="col-md-12">
+                    <textarea id="flow_question_system_prompt_input" rows="25" style="width: 100%;"></textarea>
+                    <div class="print-options" style="float: right;">
+                        <div class="actions">
+                            <button class="btn btn-primary-bot" onclick="saveQuestionSystemPrompt(this)">Save</button>
+                            <button class="btn btn-primary-bot cancel" data-dismiss="modal">Cancel</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+<div class="modal fade" id="flow_update_comment_prompt_modal" style="overflow: auto;">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+                <h4 class="modal-title">Comments</h4>
+            </div>
+            <div class="modal-body" style="display: flex;flex-direction: column;">
+                <div class="col-md-12">
+                    <textarea id="flow_comment_phase_input" rows="10" style="width: 100%;"></textarea>
+                    <div class="print-options" style="float: right;">
+                        <div class="actions">
+                            <button class="btn btn-primary-bot" onclick="saveCommentPhase(this)">Save</button>
+                            <button class="btn btn-primary-bot cancel" data-dismiss="modal">Cancel</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+
+<div class="modal fade" id="flow_final_question_prompt_modal" style="overflow: auto;">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+                <h4 class="modal-title">Final Question Prompt</h4>
+            </div>
+            <div class="modal-body" style="display: flex;flex-direction: column;">
+                <div class="col-md-12">
+                    <textarea id="flow_final_question_prompt_input" rows="25" style="width: 100%;"></textarea>
+                    <label for="flow_final_question_model_select">Select Model</label>
+                    <select class="elements-table" id="flow_final_question_model_select">
+                    </select>
+                    <div class="print-options" style="float: right;">
+                        <div class="actions">
+                            <button class="btn btn-primary-bot" onclick="saveFinalQuestionPrompt(this)">Save</button>
+                            <button class="btn btn-primary-bot cancel" data-dismiss="modal">Cancel</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+
+
+
+
+
+
+{% endblock %}
+
+{% block content %}
+
+<div class="col-xs-12" style="display: flex; padding: 0;">
+    <div id="left-panel" class="col-xs-12" style="padding: 0; ">
+        <div class="messages-block">
+            <div id="messages-container" style="overflow: auto;">
+                <div class="config-workflow">
+                    <div style="border-radius: 4px;">
+                        <button type="button" id="btn_mode_flujo" class="btn-mode-section selected" data-title="{{ translations['chatflow_popup_mode_run'] }}">{{ translations['chatflow_mode_run'] }}</button>
+                        <button type="button" id="btn_mode_question" class="btn-mode-section">{{ translations['chatflow_mode_question'] }}</button>
+                    </div>
+                    <div style="display: flex;align-items: center;position: absolute; right: 0;border-radius: 5px;">
+                        <div id="chronometer"></div>
+                        <div id="flow_show_details" style="display: flex;align-items: center;">
+                            <input type="checkbox" id="show_details">
+                            <label for="show_details">{{ translations['chatbot_show_details'] }}</label>
+                        </div>
+                        <a id="flow_clean_chat" href="javascript:;">
+                            <i id="refresh_icon" class="fa fa-refresh" style="margin-right: 5px;"></i><span>{{ translations['chatbot_clean_chat'] }}</span>
+                        </a>
+                    </div>
+                </div>
+                <div id="messages">
+                </div>
+                <div id="goto-bottom" style="color: black;position: absolute;bottom: 125px;right: 15px;float: right;display: none;">
+                    <button style="background: #001329;color: white;border: none;padding: 5px 10px;border-radius: 5px;" onclick="goto_bottom()">
+                        <i class="fa fa-chevron-down"></i></button>
+                </div>
+            </div>
+
+            <div class="mt-4" style="width: 90%; margin-left: auto; margin-right: auto; margin-bottom: 2rem;">
+                <form id="message-form" autocomplete="off" class="flex items-stretch message-form-flow">
+                    <textarea id="message-input" class="message-input-flow" autocomplete="off" placeholder="{{ translations['chatbot_placeholder_send_message'] }}" rows="1"
+                        disabled="disabled"></textarea>
+                    <button id="button-submit" type="submit" disabled="disabled"> <i class="fa fa-send"></i> </button>
+                </form>
+
+                <div id="stop-chat-button" style="color: black;position: absolute;bottom: 74px;right: 5%; display: none;">
+                    <button id="btn-stop-chat-button" style="height: 27px;background: #001329;color: white;border: none;padding: 4px 15px;">
+                        <i class="fa fa-stop"></i> 
+                        {{ translations['chatbot_stop_chat'] }}
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+</div>
+
+
+<div class="modal fade" id="chatsql_chatgraph_modal">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content" style="color: black;">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+                <h4 id="title_modal" class="modal-title">{{ translations['chatsql_chart_modal_title'] }}</h4>
+            </div>
+            <div class="modal-body" style="display: flex;">
+                <div class="col-md-12" style="width: 100%;">
+                    <div style="display: flex;align-items: center;">
+                        <div>
+                            <label class="col-form-label" for="sql_datetime_column">{{ translations['chatsql_chart_modal_date_column'] }}</label>
+                            <select class="form-control" id="sql_datetime_column" style="width: auto;">
+                                <option value="-" selected="selected">{{ translations['chatbot_select'] }}</option>
+                            </select>
+                        </div>
+                        <div style="margin-left: 10px;">
+                            <label class="col-form-label" for="sql_value_column">{{ translations['chatsql_chart_modal_value_column'] }}</label>
+                            <select class="form-control" id="sql_value_column" style="width: auto;">
+                                <option value="-" selected="selected">{{ translations['chatbot_select'] }}</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                        
+                    <div style="margin-top: 10px; margin-bottom: 5px; float: left;">
+                        <button class="btn btn-primary-bot" id="sql_chart_execute_button" onclick="sql_chart_execute(this)" disabled>
+                            {{ translations['chatbot_execute'] }}
+                        </button>
+                    </div>
+                    <div>
+                        <canvas id="my_statistics_chart"></canvas>
+                    </div>
+                    <div class="statistics_container">
+                        <div class="statistics_column">
+                            <span id="statistics_center"></span>
+                            <span id="statistics_stddev"></span>
+                        </div>
+                        <div class="statistics_column">
+                            <span id="statistics_lcl"></span>
+                            <span id="statistics_ucl"></span>
+                        </div>
+                        <div class="statistics_column">
+                            <span id="statistics_beyondLimits"></span>
+                            <span id="statistics_violatingRuns"></span>
+                        </div>
+                    </div>
+                        
+                    
+
+
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" id="button_close_sqlstrconn" class="btn btn-default" data-dismiss="modal">{{ translations['chatbot_close_button'] }}</button>
+            </div>
+        </div>
+        <!-- /.modal-content -->
+        <!-- /.modal-dialog -->
+
+    </div>
+
+</div>
+
+{% endblock %}
+
+
+{% block app_configuration_tabs %}
+
+{% if main_permission %}
+<li class="active"><a href="#main" data-toggle="tab">{{ translations['layout_app_configuration_modal_main'] }}</a></li>
+{% endif %}
+
+{% if openai_permission %}
+<li><a href="#openai" data-toggle="tab">{{ translations['layout_app_configuration_modal_openai'] }}</a></li>
+{% endif %}
+
+{% endblock %}
+
+
+{% block app_configuration_main %}
+<div class="tab-pane {% if main_permission %}active{% endif %}" id="main" {% if main_permission == False %}style="display: none;"{% endif %}>
+    <div id="section_configuration_chatflow">
+        <div class="mb-3">
+            <label class="col-form-label" for="flow_system_prompt">Default System Prompt: (Does not include for the flow questions)</label>
+            <div style="min-height: 40px;">
+                <textarea id="flow_system_prompt" class="form-control" rows="10"
+                    autocomplete="off" spellcheck="false"
+                    placeholder="Insert prompt here"
+                    style="font-size: 12px;">{{ user_data['flow_system_prompt'] or user_data['default_system_prompt_flow'] }}</textarea>
+            </div>
+        </div>
+        <div class="mb-3">
+            <label class="col-form-label" for="after_question_prompt">Post Question Prompt: (Only for flow questions)</label>
+            <div style="min-height: 40px;">
+                <textarea id="after_question_prompt" class="form-control" rows="10"
+                    autocomplete="off" spellcheck="false"
+                    placeholder="Insert prompt here"
+                    style="font-size: 12px;">{{ user_data['after_question_prompt'] or user_data['default_question_prompt_flow'] }}</textarea>
+            </div>
+        </div>
+        <div class="checkbox" style="margin-top: 20px;">
+            <label for="show_right_message" style="padding: 0;">
+                <strong>Show message (Autosave): </strong>
+                <input type="checkbox" id="show_right_message" style="margin: 2px 7px;">
+            </label>
+        </div>
+        
+        <label class="col-form-label" for="flow_language_report" style="display: none;">Language output report:</label>
+        <select class="form-control" id="flow_language_report" style="display: none;">
+            <option value="English" {% if user_data["flow_language_report"]=='English' %}selected{% endif %}>English (default)</option>
+            <option value="Spanish" {% if user_data["flow_language_report"]=='Spanish' %}selected{% endif %}>Spanish</option>
+        </select>
+    </div>
+    {% if main_permission %}
+    <button type="button" id="button_save_main_changes" class="btn btn-primary-bot" style="margin-top: 15px;">{{ translations['layout_app_configuration_modal_save'] }}</button>
+    {% endif %}
+</div>
+
+{% endblock %}
+
+
+
+
+{% block scripts %}
+<script src="/static/scripts/choices.js/js/choices.min.js"></script>
+<script src="/static/scripts/purify/js/purify.min.js"></script>
+<script src="/static/scripts/pdfmake/js/pdfmake.min.js"></script>
+<script src="/static/scripts/pdfmake/js/vfs_fonts.js"></script>
+<script src="/static/scripts/html-docx/html-docx.js"></script>
+<script src="/static/scripts/filesaver/FileSaver.min.js"></script>
+<script src="/static/scripts/sortablejs/Sortable.min.js"></script>
+
+<script src="/static/content/js/autocomplete.js?v={{ version }}"></script>
+<script src="/static/content/js/statistics.js?v={{ version }}"></script>
+<script src="/static/content/js/chatflow.js?v={{ version }}"></script>
+<!--<script src="{{url_for('static',filename='dist/js/pdf.js')}}"></script>
+<script src="{{url_for('static',filename='dist/js/pdf.worker.js')}}"></script>-->
+{% endblock %}
+

@@ -1,0 +1,100 @@
+{% extends "layout.html" %}
+
+{% block header_title %}
+<title>{{ translations['savedchat_subtitle_name'] }}</title>
+{% endblock %}
+
+{% block styles %}
+{% endblock %}
+
+{% block savedchat_leftnavbar %}
+<li id="section_title_name">
+    <div id="title_name">
+        <div>
+            <span><a href="/">{{ translations['chatbot_title_url_home'] }}</a> / {{ translations['savedchat_title_url_chat'] }}</span>
+            <br>
+            <span id="subtitle_name" style="font-size: 18px;font-weight: bold;">{{ translations['savedchat_subtitle_name'] }}</span>
+        </div>
+    </div>
+</li>
+<li id="section_navbar_showdetails" style="display: none;">
+    <a href="javascript:;">
+        <input type="checkbox" id="show_details">
+        <label for="show_details">{{ translations['chatbot_show_details'] }}</label>
+    </a>
+</li>
+{% endblock %}
+
+{% block savedchat_rightnavbar %}{% endblock %}
+
+{% block content %}
+
+<div class="col-xs-12" style="background-color: #ffffff; display: flex; padding: 0;">
+
+    <div id="left-panel" class="col-xs-9" style="background-color: #ffffff; padding: 0; ">
+
+        <div class="messages-block" style="padding-bottom: 10px;">
+            <div id="messages-container" style="overflow: auto;">
+                <div id="messages">
+                    
+                </div>
+            </div>
+
+            <!--<div class="mt-4" style="width: 90%; margin-left: auto; margin-right: auto; margin-bottom: 2rem;">
+                <form id="message-form" autocomplete="off" class="flex items-stretch">
+                    <textarea autocomplete="off" id="message-input" placeholder="Send message" rows="1"></textarea>
+                    <button id="button-submit" type="submit"> <i class="fa fa-send"></i>  </button>
+                </form>
+            </div>-->
+        </div>
+    </div>
+    <div id="right-panel" class="col-xs-3 right-thought-panel" style="border-top: solid 2px #f1f1f2;">
+
+        <div id="thought-section">
+            <div class="col-xs-12" style="height: 45px; display: flex; align-items: center; border-bottom: solid 2px #f1f1f2; justify-content: space-between;">
+                <span style="color: black; ">{{ translations['savedchat_date_historical'] }}</span>
+                <i class="fa fa-fw fa-plus-circle" style="font-size: 20px;color: #3583da;"></i>
+            </div>
+            <div class="col-xs-12">
+                <select class="form-control" id="user_name" style="width: 100%;margin-top: 15px;padding: 5px;font-size: 12px;background-color: #e8ebef;border-color: #e8ebef;font-weight: bold;">
+                    <option value="-" selected="selected">{{ translations['savedchat_user_name_select'] }}</option>
+                </select>
+                <select class="form-control" id="type_chat" style="width: 100%;margin-top: 15px;padding: 5px;font-size: 12px;background-color: #e8ebef;border-color: #e8ebef;font-weight: bold;">
+                    <option value="Sql" selected="selected">Chat SQL</option>
+                    <option value="Flow">Chat Flow</option>
+                </select>
+                <div id="thought" style="padding-top: 15px; height: calc(93vh - 160px);">
+
+
+                    <!--<div class="block-thought">
+                        <div class="thought-question">
+                            <span class="span-question-text">What is the capital of united states?</span>
+                            <span class="span-question-time">1 week</span>
+                        </div>
+                        <div class="thought-answer">
+                            <span>Washington, D.C.</span>
+                        </div>
+                    </div>-->
+
+
+                </div>
+            </div>
+        </div>
+
+        <div id="file-section" style="display: none;">
+            <iframe id="pdf-file-url" src="" allow="autoplay" style="height: 90vh; width: 100%;"></iframe>
+        </div>
+
+
+
+    </div>
+
+</div>
+
+{% endblock %}
+
+
+
+{% block scripts %}
+<script src="{{url_for('static',filename='content/js/savedchat.js')}}?v={{ version }}"></script>
+{% endblock %}

@@ -1,0 +1,103 @@
+﻿{% extends "layout.html" %}
+
+{% block header_title %}
+<title>{{ translations['home_subtitle_name'] }}</title>
+{% endblock %}
+
+{% block styles %}
+{% endblock %}
+
+{% block home_leftnavbar %}
+<li id="section_title_name">
+    <div id="title_name">
+        <div>
+            <span><a href="/">{{ translations['chatbot_title_url_home'] }}</a> /</span>
+            <br>
+            <span id="subtitle_name" style="font-size: 18px;font-weight: bold;">{{ translations['home_subtitle_name'] }}</span>
+        </div>
+    </div>
+</li>
+{% endblock %}
+
+{% block home_rightnavbar %}
+<li id="section_logout" data-title="{{ translations['user_profile_logout'] }}">
+    <a href="/logout">
+        <div class="navbar_button_icon">
+            <img src="../static/dist/img/sqlv7/arrow-right-on-rectangle.svg" alt="logout" style="width: 12px;">
+        </div>
+    </a>
+</li>
+<!-- User Account: style can be found in dropdown.less -->
+<li class="dropdown user user-menu">
+    <a href="#" class="dropdown-toggle" data-toggle="dropdown">
+        {% if user_data['user_image'] == "": %}
+            <div id="user_profile_image" class="user-profile-image" style="background-color: {{ user_data['profile_color'] }}">{{ user_data['initial_name'] }}</div>
+        {% else %}
+            <div id="user_profile_image" class="user-profile-image" style="background-image: url('{{ user_data['user_image'] }}')"></div>
+        {% endif %}
+        <div class="user_profile_name">
+            <b>{{ user_data['user_name'] + ' ' + user_data['last_name'] }}</b>
+            <br>
+            <span class="hidden-xs">{% if session.get('lang', 'es') == "en": %} {{ user_data['role_name_en'] }} {% else %} {{ user_data['role_name_es'] }} {% endif %}</span>
+        </div>
+    </a>
+    <ul class="dropdown-menu">
+        <!-- User image -->
+        <li class="user-header">
+            <!-- <img src="../static/dist/img/sqlv7/Ellipse 1.svg" class="img-circle" alt="User Image"> -->
+            {% if user_data['user_image'] == "": %}
+                <div id="user_profile_image" class="user-header-profile-image" style="background-color: {{ user_data['profile_color'] }}">{{ user_data['initial_name'] }}</div>
+            {% else %}
+                <div id="user_profile_image" class="user-header-profile-image" style="background-image: url('{{ user_data['user_image'] }}')"></div>
+            {% endif %}
+            <p>
+                {{ user_data['user_name'] + ' ' + user_data['last_name'] }}
+                <small>{{ translations['user_profile_member_since'] }} {{ user_data['created_at'] }} [{{ version }}]</small>
+            </p>
+        </li>
+        <!-- Menu Footer-->
+        <li class="user-footer">
+            <div class="pull-left" style="display: none;">
+                <a href="#" class="btn btn-primary-bot btn-flat">{{ translations['user_profile_profile'] }}</a>
+            </div>
+            <div class="pull-right">
+                <a href="/logout" class="btn btn-primary-bot btn-flat">{{ translations['user_profile_logout'] }}</a>
+            </div>
+        </li>
+    </ul>
+</li>
+{% endblock %}
+
+{% block content %}
+
+
+<div class="col-xs-12" style="display: flex;flex-direction: column;height: calc(100vh - 15vh);justify-content: center;">
+    <div class="home-page-image">
+        <img src="../static/dist/img/v8/logo-0.png" alt="bot" style="width: 125px;">
+    </div>
+    <div class="home-page-title">
+        <span style="font-size: 30px;">{{ translations['home_welcome_to_minebot'] }}</span>
+    </div>
+    <div style="margin-top: 15px;">
+        <div class="block-chat-selection">
+            {% if ("00000000-0000-0000-0000-000000000000" in user_data['permission'] or
+            "05a4b2cb-a94a-4633-975d-0567a4f59a57" in user_data['permission']) and WEB_APP_VERSION != 'Lite': %}
+            <a href="/chatsql" class="btn-chat-selection"></i>{{ translations['home_chatsql_selection'] }}</a>
+            {% endif %}
+            {% if "00000000-0000-0000-0000-000000000000" in user_data['permission'] or
+            "d37a6e81-100f-469c-9b95-e46b067d3711" in user_data['permission']: %}
+            <a href="/chatflow" class="btn-chat-selection"></i>{{ translations['home_chatflow_selection'] }}</a>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+
+
+{% endblock %}
+
+
+
+{% block scripts %}
+<script src="{{url_for('static',filename='content/js/home.js')}}?v={{ version }}"></script>
+{% endblock %}

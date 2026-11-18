@@ -1,0 +1,217 @@
+{% extends "layout.html" %}
+
+{% block header_title %}
+<title>{{ translations['settings_title'] }}</title>
+{% endblock %}
+
+{% block styles %}
+{% endblock %}
+
+
+{% block general_settings_rightnavbar %}
+<!-- User Account: style can be found in dropdown.less -->
+<li class="dropdown user user-menu">
+    <a href="#" class="dropdown-toggle" data-toggle="dropdown">
+        {% if user_data['user_image'] == "": %}
+            <div id="user_profile_image" class="user-profile-image" style="background-color: {{ user_data['profile_color'] }}">{{ user_data['initial_name'] }}</div>
+        {% else %}
+            <div id="user_profile_image" class="user-profile-image" style="background-image: url('{{ user_data['user_image'] }}')"></div>
+        {% endif %}
+        <div class="user_profile_name">
+            <b>{{ user_data['user_name'] + ' ' + user_data['last_name'] }}</b>
+            <br>
+            <span class="hidden-xs">{% if session.get('lang', 'es') == "en": %} {{ user_data['role_name_en'] }} {% else %} {{ user_data['role_name_es'] }} {% endif %}</span>
+        </div>
+    </a>
+    <ul class="dropdown-menu">
+        <!-- User image -->
+        <li class="user-header">
+            <!-- <img src="../static/dist/img/sqlv7/Ellipse 1.svg" class="img-circle" alt="User Image"> -->
+            {% if user_data['user_image'] == "": %}
+                <div id="user_profile_image" class="user-header-profile-image" style="background-color: {{ user_data['profile_color'] }}">{{ user_data['initial_name'] }}</div>
+            {% else %}
+                <div id="user_profile_image" class="user-header-profile-image" style="background-image: url('{{ user_data['user_image'] }}')"></div>
+            {% endif %}
+            <p>
+                {{ user_data['user_name'] + ' ' + user_data['last_name'] }}
+                <small>{{ translations['user_profile_member_since'] }} {{ user_data['created_at'] }} [{{ version }}]</small>
+            </p>
+        </li>
+        <!-- Menu Footer-->
+        <li class="user-footer">
+            <div class="pull-left" style="display: none;">
+                <a href="#" class="btn btn-primary-bot btn-flat">{{ translations['user_profile_profile'] }}</a>
+            </div>
+            <div class="pull-right">
+                <a href="/logout" class="btn btn-primary-bot btn-flat">{{ translations['user_profile_logout'] }}</a>
+            </div>
+        </li>
+    </ul>
+</li>
+{% endblock %}
+
+
+{% block content %}
+
+<div class="col-xs-12">
+    <div class="col-md-6">
+        <h4>{{ translations['settings_title_sql_server'] }}</h4>
+        <form id="sqlFormSqlSecrets">
+            <div class="mb-3">
+                <label for="secrets" class="form-label">{{ translations['settings_secrets'] }}</label>
+                <input type="text" class="form-control" id="secrets" required>
+            </div>
+            <div class="mb-3">
+                <label for="database_description" class="form-label">{{ translations['settings_database_description'] }}</label>
+                <input type="text" class="form-control" id="database_description" required>
+            </div>
+            <button type="button" id="button_save_secret_sqlserver" class="btn btn-primary-bot" onclick="save_secret_sqlserver()">
+                {{ translations['chatbot_save_button'] }}
+            </button>
+        </form>
+        <hr>
+        <h4>{{ translations['settings_existing_records'] }}</h4>
+        <div class="box" style="overflow: auto;border: none;height: 200px;">
+            <table class="table table-format table-striped" id="tableSqlSecrets" style="text-align: left;">
+                <thead>
+                    <tr>
+                        <th>{{ translations['settings_sql_secrets_table_header_id'] }}</th>
+                        <th>{{ translations['settings_sql_secrets_table_header_secrets'] }}</th>
+                        <th>{{ translations['settings_sql_secrets_table_header_database_description'] }}</th>
+                        <th style="width: 80px;">{{ translations['settings_sql_secrets_table_header_action'] }}</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+            <div id="overlay_sqlsecrets_table" class="overlay">
+                <i class="fa fa-refresh fa-spin"></i>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-6">
+        <h4>{{ translations['settings_title_phase_type'] }}</h4>
+        <form id="sqlFormPhases">
+            <div class="mb-3">
+                <label for="settings_phase_name" class="form-label">{{ translations['settings_phase_name'] }}</label>
+                <input type="text" class="form-control" id="settings_phase_name" required>
+            </div>
+            <div class="mb-3">
+                <label for="settings_chat_type" class="form-label">{{ translations['settings_chat_type'] }}</label>
+                <input type="text" class="form-control" id="settings_chat_type" required>
+            </div>
+            <button type="button" id="button_save_phasetype" class="btn btn-primary-bot" onclick="save_phase_type()">
+                {{ translations['chatbot_save_button'] }}
+            </button>
+        </form>
+        <hr>
+        <div>
+            <h4>{{ translations['settings_existing_records'] }}</h4>
+        </div>
+        <div class="box" style="overflow: auto;border: none;height: 200px;">
+            <table class="table table-format table-striped" id="tablePhaseType" style="text-align: left;">
+                <thead>
+                    <tr>
+                        <th>{{ translations['settings_phase_type_table_header_id'] }}</th>
+                        <th>{{ translations['settings_phase_type_table_header_phase_name'] }}</th>
+                        <th>{{ translations['settings_phase_type_table_header_chat_type'] }}</th>
+                        <th style="width: 80px;">{{ translations['settings_phase_type_table_header_action'] }}</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+            <div id="overlay_phasetype_table" class="overlay">
+                <i class="fa fa-refresh fa-spin"></i>
+            </div>
+        </div>
+        
+    </div>
+
+    <div class="col-md-12">
+        <hr>
+    </div>
+    <div class="col-md-12">
+        <h4>{{ translations['settings_title_phase_type'] }}</h4>
+        <button type="button" id="button_refresh_last_data_by_date" class="btn btn-primary-bot" onclick="refreshLastDataByDate()">
+            {{ translations['chatbot_save_button'] }}
+        </button>
+        <div style="margin: 15px 0;">
+            <span style="font-weight: bold;">{{ translations['chatbot_label_response'] }}</span>
+            <div class="block-response" style="width: 50%;min-width: 200px;">
+                <span id="response" class="span-response"></span>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-12">
+        <hr>
+    </div>
+
+    <div class="col-md-12">
+        <h4>{{ translations['settings_title_role_configuration'] }}</h4>
+
+        <form id="sqlFormRoles">
+            <div class="mb-3">
+                <label for="settings_role_name" class="form-label">{{ translations['settings_role_name'] }}</label>
+                <input type="text" class="form-control" id="settings_role_name" required>
+            </div>
+            <div class="mb-3">
+                <label for="settings_role_prompt" class="form-label">{{ translations['settings_role_prompt'] }}</label>
+                <textarea id="settings_role_prompt" class="form-control" rows="3" required></textarea>
+            </div>
+            <div class="mb-3">
+                <div style="display: flex;">
+                    <div>
+                        <label for="settings_phase_type" class="form-label">{{ translations['settings_phase_type'] }}</label>
+                        <select class="form-control" id="settings_phase_type" style="width: 200px;">
+                        </select>
+                    </div>
+                    <div style="margin: 0px 10px;">
+                        <label for="settings_role_image" class="form-label">{{ translations['settings_role_image'] }}</label>
+                        <select class="form-control" id="settings_role_image" style="width: 200px;">
+                            <option value="dist/img/users/1.png" data-image="static/dist/img/users/1.png">{{ translations['settings_option_image'] }} 1</option>
+                            <option value="dist/img/users/2.png" data-image="static/dist/img/users/2.png">{{ translations['settings_option_image'] }} 2</option>
+                            <option value="dist/img/users/3.png" data-image="static/dist/img/users/3.png">{{ translations['settings_option_image'] }} 3</option>
+                            <option value="dist/img/users/4.png" data-image="static/dist/img/users/4.png">{{ translations['settings_option_image'] }} 4</option>
+                            <option value="dist/img/users/5.png" data-image="static/dist/img/users/5.png">{{ translations['settings_option_image'] }} 5</option>
+                            <option value="dist/img/users/6.png" data-image="static/dist/img/users/6.png">{{ translations['settings_option_image'] }} 6</option>
+                            <option value="dist/img/users/7.png" data-image="static/dist/img/users/7.png">{{ translations['settings_option_image'] }} 7</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            <button type="button" id="button_save_roleconfig" class="btn btn-primary-bot" onclick="save_role_config()">
+                {{ translations['chatbot_save_button'] }}
+            </button>
+        </form>
+        <hr>
+        <div>
+            <h4>{{ translations['settings_existing_records'] }}</h4>
+        </div>
+        <div class="box" style="overflow: auto;border: none;height: 500px;">
+            <table class="table table-format table-striped" id="tableRoleConfig" style="text-align: left;">
+                <thead>
+                    <tr>
+                        <th style="width: 50px;">{{ translations['settings_role_config_table_header_id'] }}</th>
+                        <th style="width: 150px;">{{ translations['settings_role_config_table_header_role_name'] }}</th>
+                        <th style="width: auto;">{{ translations['settings_role_config_table_header_role_prompt'] }}</th>
+                        <th style="width: 160px;">{{ translations['settings_role_config_table_header_phase_type'] }}</th>
+                        <th style="width: 160px;">{{ translations['settings_role_config_table_header_image'] }}</th>
+                        <th style="width: 80px;">{{ translations['settings_role_config_table_header_action'] }}</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+            <div id="overlay_roleconfig_table" class="overlay">
+                <i class="fa fa-refresh fa-spin"></i>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+
+
+{% block scripts %}
+<script src="{{url_for('static',filename='content/js/settings.js')}}?v={{ version }}"></script>
+{% endblock %}

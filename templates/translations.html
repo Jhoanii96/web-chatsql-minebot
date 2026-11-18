@@ -1,0 +1,97 @@
+﻿{% extends "layout.html" %}
+
+{% block header_title %}
+<title>{{ translations['translations_subtitle_name'] }}</title>
+{% endblock %}
+
+{% block styles %}
+{% endblock %}
+
+{% block chat_sql_leftnavbar %}
+<li id="section_title_name">
+    <div id="title_name">
+        <div>
+            <span><a href="/">{{ translations['chatbot_title_url_home'] }}</a> / {{ translations['translations_title_url_chat'] }}</span>
+            <br>
+            <span id="subtitle_name" style="font-size: 18px;font-weight: bold;">{{ translations['translations_subtitle_name'] }}</span>
+        </div>
+    </div>
+</li>
+{% endblock %}
+
+{% block chat_sql_rightnavbar %}
+<!-- User Account: style can be found in dropdown.less -->
+<li class="dropdown user user-menu">
+    <a href="#" class="dropdown-toggle" data-toggle="dropdown">
+        {% if user_data['user_image'] == "": %}
+            <div id="user_profile_image" class="user-profile-image" style="background-color: {{ user_data['profile_color'] }}">{{ user_data['initial_name'] }}</div>
+        {% else %}
+            <div id="user_profile_image" class="user-profile-image" style="background-image: url('{{ user_data['user_image'] }}')"></div>
+        {% endif %}
+        <div class="user_profile_name">
+            <b>{{ user_data['user_name'] + ' ' + user_data['last_name'] }}</b>
+            <br>
+            <span class="hidden-xs">{% if session.get('lang', 'es') == "en": %} {{ user_data['role_name_en'] }} {% else %} {{ user_data['role_name_es'] }} {% endif %}</span>
+        </div>
+    </a>
+    <ul class="dropdown-menu">
+        <!-- User image -->
+        <li class="user-header">
+            <!-- <img src="../static/dist/img/sqlv7/Ellipse 1.svg" class="img-circle" alt="User Image"> -->
+            {% if user_data['user_image'] == "": %}
+                <div id="user_profile_image" class="user-header-profile-image" style="background-color: {{ user_data['profile_color'] }}">{{ user_data['initial_name'] }}</div>
+            {% else %}
+                <div id="user_profile_image" class="user-header-profile-image" style="background-image: url('{{ user_data['user_image'] }}')"></div>
+            {% endif %}
+            <p>
+                {{ user_data['user_name'] + ' ' + user_data['last_name'] }}
+                <small>{{ translations['user_profile_member_since'] }} {{ user_data['created_at'] }} [{{ version }}]</small>
+            </p>
+        </li>
+        <!-- Menu Footer-->
+        <li class="user-footer">
+            <div class="pull-left" style="display: none;">
+                <a href="#" class="btn btn-primary-bot btn-flat">{{ translations['user_profile_profile'] }}</a>
+            </div>
+            <div class="pull-right">
+                <a href="/logout" class="btn btn-primary-bot btn-flat">{{ translations['user_profile_logout'] }}</a>
+            </div>
+        </li>
+    </ul>
+</li>
+{% endblock %}
+
+
+{% block content %}
+<div class="col-xs-12" style="height: calc(100vh - 10vh);overflow: auto;">
+    <div style="margin-top: 20px;">
+        <button type="button" id="button_refresh" class="btn btn-primary-bot small-button">{{ translations['chatbot_refresh_button'] }}</button>
+    </div>
+    <div class="box" style="margin-top: 20px;">
+        <div class="box-header">
+            <h3 class="box-title">{{ translations['translations_subtitle_name'] }}</h3>
+        </div>
+        <div class="box-body">
+            <table class="table table-format table-bordered table-striped" id="tableTranslations" style="text-align: left;">
+                <thead>
+                    <tr>
+                        <th>{{ translations['translations_table_header_id'] }}</th>
+                        <th>{{ translations['translations_table_header_translation_key'] }}</th>
+                        <th>{{ translations['translations_table_header_language'] }}</th>
+                        <th>{{ translations['translations_table_header_translation'] }}</th>
+                        <th>{{ translations['translations_table_header_action'] }}</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+
+
+
+{% block scripts %}
+<script src="{{url_for('static',filename='content/js/translations.js')}}?v={{ version }}"></script>
+{% endblock %}

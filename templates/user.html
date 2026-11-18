@@ -1,0 +1,320 @@
+{% extends "layout.html" %}
+
+{% block header_title %}
+<title>{{ translations['user_title'] }}</title>
+{% endblock %}
+
+{% block styles %}
+{% endblock %}
+
+
+
+{% block user_configuration_rightnavbar %}
+<!-- User Account: style can be found in dropdown.less -->
+<li class="dropdown user user-menu">
+    <a href="#" class="dropdown-toggle" data-toggle="dropdown">
+        {% if user_data['user_image'] == "": %}
+            <div id="user_profile_image" class="user-profile-image" style="background-color: {{ user_data['profile_color'] }}">{{ user_data['initial_name'] }}</div>
+        {% else %}
+            <div id="user_profile_image" class="user-profile-image" style="background-image: url('{{ user_data['user_image'] }}')"></div>
+        {% endif %}
+        <div class="user_profile_name">
+            <b>{{ user_data['user_name'] + ' ' + user_data['last_name'] }}</b>
+            <br>
+            <span class="hidden-xs">{% if session.get('lang', 'es') == "en": %} {{ user_data['role_name_en'] }} {% else %} {{ user_data['role_name_es'] }} {% endif %}</span>
+        </div>
+    </a>
+    <ul class="dropdown-menu">
+        <!-- User image -->
+        <li class="user-header">
+            <!-- <img src="../static/dist/img/sqlv7/Ellipse 1.svg" class="img-circle" alt="User Image"> -->
+            {% if user_data['user_image'] == "": %}
+                <div id="user_profile_image" class="user-header-profile-image" style="background-color: {{ user_data['profile_color'] }}">{{ user_data['initial_name'] }}</div>
+            {% else %}
+                <div id="user_profile_image" class="user-header-profile-image" style="background-image: url('{{ user_data['user_image'] }}')"></div>
+            {% endif %}
+            <p>
+                {{ user_data['user_name'] + ' ' + user_data['last_name'] }}
+                <small>{{ translations['user_profile_member_since'] }} {{ user_data['created_at'] }} [{{ version }}]</small>
+            </p>
+        </li>
+        <!-- Menu Footer-->
+        <li class="user-footer">
+            <div class="pull-left" style="display: none;">
+                <a href="#" class="btn btn-primary-bot btn-flat">{{ translations['user_profile_profile'] }}</a>
+            </div>
+            <div class="pull-right">
+                <a href="/logout" class="btn btn-primary-bot btn-flat">{{ translations['user_profile_logout'] }}</a>
+            </div>
+        </li>
+    </ul>
+</li>
+{% endblock %}
+
+
+
+{% block content %}
+<div class="col-xs-12">
+    <div class="col-md-12">
+        <h4>{{ translations['user_title_user_form'] }}</h4>
+        <form id="userForm">
+            <div class="col-md-6">
+                <div class="mb-3">
+                    <label for="input_username" class="form-label">{{ translations['user_user_name'] }}</label>
+                    <input type="text" class="form-control" id="input_username" required>
+                </div>
+                <div class="mb-3">
+                    <label for="input_lastname" class="form-label">{{ translations['user_user_lastname'] }}</label>
+                    <input type="text" class="form-control" id="input_lastname" required>
+                </div>
+                <div class="mb-3">
+                    <label for="select_gender" class="form-label">{{ translations['user_select_gender'] }}</label>
+                    <select class="form-control" id="select_gender" is="ms-dropdown">
+                        <option value="0">{{ translations['user_option_male'] }}</option>
+                        <option value="1">{{ translations['user_option_female'] }}</option>
+                      </select>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="mb-3">
+                    <label for="input_email" class="form-label">{{ translations['user_email'] }}</label>
+                    <input type="email" class="form-control" id="input_email" required>
+                </div>
+                <div class="mb-3">
+                    <div class="row">
+                        <div class="col-lg-6">
+                            <label for="input_password" class="form-label">{{ translations['user_password'] }}</label>
+                            <input type="password" class="form-control" id="input_password" required>
+                        </div>
+                        <div class="col-lg-6">
+                            <label for="input_rpassword" class="form-label">{{ translations['user_repeat_password'] }}</label>
+                            <input type="password" class="form-control" id="input_rpassword" required>
+                        </div>
+                    </div>
+                </div>
+                <div id="section_role" class="mb-3">
+                    <label for="select_role" class="form-label">{{ translations['user_role'] }}</label>
+                    <select class="form-control" id="select_role">
+                    </select>
+                </div>
+            </div>
+            
+            <button type="button" id="button_save_user" class="btn btn-primary-bot" onclick="save_user()">{{ translations['chatbot_save_button'] }}</button>
+        </form>
+
+        <hr>
+
+        <h4>{{ translations['user_user_records_title'] }}</h4>
+        <div class="box" style="overflow: auto;border: none;height: 200px;">
+            <table class="table table-format table-striped" id="tableUser" style="text-align: left;">
+                <thead>
+                    <tr>
+                        <th>{{ translations['user_user_table_id'] }}</th>
+                        <th>{{ translations['user_user_table_name'] }}</th>
+                        <th>{{ translations['user_user_table_lastname'] }}</th>
+                        <th>{{ translations['user_user_table_gender'] }}</th>
+                        <th>{{ translations['user_user_table_email'] }}</th>
+                        <th>{{ translations['user_user_table_password'] }}</th>
+                        <th>{{ translations['user_user_table_role'] }}</th>
+                        <th style="width: 80px;">{{ translations['user_user_table_action'] }}</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+            <div id="overlay_user_table" class="overlay">
+                <i class="fa fa-refresh fa-spin"></i>
+            </div>
+        </div>
+        
+    </div>
+
+
+    <div class="col-md-6">
+        <h4>{{ translations['user_title_user_role'] }}</h4>
+
+        <form id="sqlFormUserRole">
+            <div class="mb-3">
+                <label for="input_rolename" class="form-label">{{ translations['user_role_name'] }}</label>
+                <input type="text" class="form-control" id="input_rolename" required>
+            </div>
+            <button type="button" id="button_save_userrole" class="btn btn-primary-bot" onclick="save_userrole()">{{ translations['chatbot_save_button'] }}</button>
+        </form>
+
+        <hr>
+
+        <div>
+            <h4>{{ translations['user_existing_records'] }}</h4>
+        </div>
+        
+        <div class="box" style="overflow: auto;border: none;height: 200px;">
+            <table class="table table-format table-striped" id="tableUserRole" style="text-align: left;">
+                <thead>
+                    <tr>
+                        <th>{{ translations['user_user_role_table_header_id'] }}</th>
+                        <th>{{ translations['user_user_role_table_header_role_name'] }}</th>
+                        <th>{{ translations['user_user_role_table_header_role_name_en'] }}</th>
+                        <th>{{ translations['user_user_role_table_header_role_name_es'] }}</th>
+                        <th style="width: 80px;">{{ translations['user_user_role_table_header_action'] }}</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+            <div id="overlay_userrole_table" class="overlay">
+                <i class="fa fa-refresh fa-spin"></i>
+            </div>
+        </div>
+        
+    </div>
+
+    <div class="col-md-6">
+        <h4>{{ translations['user_title_module'] }}</h4>
+
+        <form id="sqlFormModule">
+            <div class="mb-3">
+                <label for="input_module" class="form-label">{{ translations['user_module_name'] }}</label>
+                <input type="text" class="form-control" id="input_module" required>
+            </div>
+            <button type="button" id="button_save_module" class="btn btn-primary-bot" onclick="save_module()">{{ translations['chatbot_save_button'] }}</button>
+        </form>
+
+        <hr>
+
+        <div>
+            <h4>{{ translations['user_existing_records'] }}</h4>
+        </div>
+        
+        <div class="box" style="overflow: auto;border: none;height: 200px;">
+            <table class="table table-format table-striped" id="tableModule" style="text-align: left;">
+                <thead>
+                    <tr>
+                        <th>{{ translations['user_module_table_header_id'] }}</th>
+                        <th>{{ translations['user_module_table_header_module'] }}</th>
+                        <th>{{ translations['user_module_table_header_status'] }}</th>
+                        <th style="width: 80px;">{{ translations['user_module_table_header_action'] }}</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+            <div id="overlay_module_table" class="overlay">
+                <i class="fa fa-refresh fa-spin"></i>
+            </div>
+        </div>
+        
+    </div>
+
+    <div class="col-md-12">
+        <h4>{{ translations['user_title_setting_permissions'] }}</h4>
+        <form id="sqlFormPermission">
+            <div style="display: flex;">
+                <div class="col-lg-6">
+                    <div class="form-group">
+                        <label for="role">{{ translations['user_select_role'] }}</label>
+                        <select id="select_role_permission" class="form-control" style="min-width: 150px;">
+                            <option value="-">{{ translations['user_select_role_select'] }}</option>
+                        </select>
+                    </div>
+                    <div id="select_role_message" style="margin-bottom: 10px;display: none;">
+                        <span>{{ translations['chatbot_loading'] }}</span>
+                    </div>
+                </div>
+                <div class="col-lg-6">
+                    <div class="form-group">
+                        <label>{{ translations['user_permissions_per_module'] }}</label>
+                        <div id="checkboxContainer" style="margin-left: 20px;">
+                            <!-- Content will be dynamically added here -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <button type="button" id="button_update_permission" class="btn btn-primary-bot" onclick="update_permission()" style="margin-bottom: 20px;">
+                {{ translations['chatbot_save_button'] }}
+            </button>
+        </form>
+        
+    </div>
+
+    <div class="col-md-12">
+        <h4>{{ translations['user_title_setting_flow_permissions'] }}</h4>
+        <form id="sqlFormFlowPermission">
+            <div style="display: flex;">
+                <div class="col-lg-6">
+                    <div class="form-group">
+                        <label for="role">{{ translations['user_select_role'] }}</label>
+                        <select id="select_role_flow_permission" class="form-control" style="min-width: 150px;">
+                            <option value="-">{{ translations['user_select_role_select'] }}</option>
+                        </select>
+                    </div>
+                    <div id="select_role_flow_message" style="margin-bottom: 10px;display: none;">
+                        <span>{{ translations['chatbot_loading'] }}</span>
+                    </div>
+                </div>
+                <div class="col-lg-6">
+                    <div class="form-group">
+                        <label>{{ translations['user_permissions_per_flow'] }}</label>
+                        <div id="checkboxFlowContainer" style="margin-left: 20px;">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <button type="button" id="button_update_flow_permission" class="btn btn-primary-bot" onclick="update_flow_permission()" style="margin-bottom: 20px;">
+                {{ translations['chatbot_save_button'] }}
+            </button>
+        </form>
+    </div>
+
+    <div class="col-md-12">
+        <h4>{{ translations['user_title_copy_user_dataset_chateditor'] }}</h4>
+
+        <form id="sqlFormCopyData">
+            <div style="display: flex;">
+                <div class="col-lg-4">
+                    <div class="form-group">
+                        <label for="select_origin_user">{{ translations['user_select_origin_user'] }}</label>
+                        <select id="select_origin_user" class="form-control" style="min-width: 150px;">
+                            <option value="-">{{ translations['user_select_origin_user_select'] }}</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="col-lg-4">
+                    <div class="form-group">
+                        <label for="select_destination_user">{{ translations['user_select_destination_user'] }}</label>
+                        <select id="select_destination_user" class="form-control" style="min-width: 150px;">
+                            <option value="-">{{ translations['user_select_destination_user_select'] }}</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="col-lg-4">
+                    <div class="form-group">
+                        <label for="button_update_user_dataset">{{ translations['user_update_user_dataset_button'] }}</label>
+                        <button type="button" id="button_update_user_dataset" class="btn btn-primary-bot" onclick="copy_user_dataset()" style="display: block;margin-bottom: 20px;">
+                            {{ translations['chatbot_save_button'] }}
+                        </button>
+                    </div>
+                </div>
+                
+            </div>
+
+            <div class="col-lg-12">
+                <span style="font-weight: bold;">{{ translations['user_copy_historical_area'] }}</span>
+                <div id="copy_historical_area" class="copy-historical-area">
+                </div>
+            </div>
+
+            
+        </form>
+        
+    </div>
+
+    <div class="col-md-12"><div style="height: 25px;"></div></div>
+
+</div>
+
+{% endblock %}
+
+
+
+{% block scripts %}
+<script src="{{url_for('static',filename='content/js/user.js')}}?v={{ version }}"></script>
+{% endblock %}

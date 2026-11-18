@@ -1,0 +1,124 @@
+﻿{% extends "layout.html" %}
+
+{% block header_title %}
+<title>{{ translations['questions_subtitle_name'] }}</title>
+{% endblock %}
+
+{% block styles %}
+{% endblock %}
+
+{% block chat_sql_leftnavbar %}
+<li id="section_title_name">
+    <div id="title_name">
+        <div>
+            <span><a href="/">{{ translations['chatbot_title_url_home'] }}</a> / {{ translations['questions_title_url_chat'] }}</span>
+            <br>
+            <span id="subtitle_name" style="font-size: 18px;font-weight: bold;">{{ translations['questions_subtitle_name'] }}</span>
+        </div>
+    </div>
+</li>
+{% endblock %}
+
+{% block chat_sql_rightnavbar %}
+<li id="section_navbar_chattype">
+    <div id="question_type">
+        <label class="col-form-label" for="question_chat_type" style="margin: 0;font-weight: normal;">{{ translations['questions_chat_type'] }}</label>
+        <select class="form-control" id="question_chat_type" style="width: auto;">
+            <option value="Sql" selected="selected">Chat Sql</option>
+        </select>
+    </div>
+</li>
+<!-- User Account: style can be found in dropdown.less -->
+<li class="dropdown user user-menu">
+    <a href="#" class="dropdown-toggle" data-toggle="dropdown">
+        {% if user_data['user_image'] == "": %}
+            <div id="user_profile_image" class="user-profile-image" style="background-color: {{ user_data['profile_color'] }}">{{ user_data['initial_name'] }}</div>
+        {% else %}
+            <div id="user_profile_image" class="user-profile-image" style="background-image: url('{{ user_data['user_image'] }}')"></div>
+        {% endif %}
+        <div class="user_profile_name">
+            <b>{{ user_data['user_name'] + ' ' + user_data['last_name'] }}</b>
+            <br>
+            <span class="hidden-xs">{% if session.get('lang', 'es') == "en": %} {{ user_data['role_name_en'] }} {% else %} {{ user_data['role_name_es'] }} {% endif %}</span>
+        </div>
+    </a>
+    <ul class="dropdown-menu">
+        <!-- User image -->
+        <li class="user-header">
+            <!-- <img src="../static/dist/img/sqlv7/Ellipse 1.svg" class="img-circle" alt="User Image"> -->
+            {% if user_data['user_image'] == "": %}
+                <div id="user_profile_image" class="user-header-profile-image" style="background-color: {{ user_data['profile_color'] }}">{{ user_data['initial_name'] }}</div>
+            {% else %}
+                <div id="user_profile_image" class="user-header-profile-image" style="background-image: url('{{ user_data['user_image'] }}')"></div>
+            {% endif %}
+            <p>
+                {{ user_data['user_name'] + ' ' + user_data['last_name'] }}
+                <small>{{ translations['user_profile_member_since'] }} {{ user_data['created_at'] }} [{{ version }}]</small>
+            </p>
+        </li>
+        <!-- Menu Footer-->
+        <li class="user-footer">
+            <div class="pull-left" style="display: none;">
+                <a href="#" class="btn btn-primary-bot btn-flat">{{ translations['user_profile_profile'] }}</a>
+            </div>
+            <div class="pull-right">
+                <a href="/logout" class="btn btn-primary-bot btn-flat">{{ translations['user_profile_logout'] }}</a>
+            </div>
+        </li>
+    </ul>
+</li>
+{% endblock %}
+
+
+{% block content %}
+<div class="col-xs-12" style="height: calc(100vh - 10vh);overflow: auto;">
+    <h2 class="questions-main-title" style="text-align: center;">{{ translations['questions_main_title'] }}</h2>
+    <div id="sql_tablename" style="display: none;">
+        <label class="col-form-label" id="label_sqltable" for="table_name" style="margin: 0;">{{ translations['questions_table_name'] }}</label>
+        <select class="form-control" id="table_name" style="width: auto;">
+            <option value="-1">{{ translations["chatbot_select"] }}</option>
+        {% for group, tables in sql_list|groupby('table_group') %}
+            <optgroup label="{{ group if group else 'No Group' }}">
+                {% for t in tables %}
+                    <option value="{{ t.id }}" 
+                            title="{{ 'Table: ' + t.source_table + '\n' + 'Description: ' + t.table_description }}" 
+                            data-secret="{{ t.secrets }}" data-source="{{ t.source_table }}">
+                        {{ t.table_name }}
+                    </option>
+                {% endfor %}
+            </optgroup>
+        {% endfor %}
+        </select>
+    </div>
+    <div class="mb-3">
+        <label for="input_question" class="form-label">{{ translations['questions_input_question'] }}</label>
+        <input type="text" class="form-control" id="input_question" style="width: 50%;" placeholder="{{ translations['questions_placeholder_input_question'] }}" required="">
+    </div>
+    <button type="button" id="button_save_question" class="btn btn-primary-bot" onclick="save_question()">{{ translations['chatbot_save_button'] }}</button>
+
+    <div class="box" style="overflow: auto;border: none;height: 400px;margin-top: 20px;">
+        <table class="table table-format table-striped" id="tableQuestions" style="text-align: left;">
+            <thead>
+                <tr>
+                    <th>{{ translations['questions_table_header_id'] }}</th>
+                    <th style="min-width: 250px;">{{ translations['questions_table_header_table_name'] }}</th>
+                    <th style="min-width: 250px;">{{ translations['questions_table_header_question'] }}</th>
+                    <th style="min-width: 155px;">{{ translations['questions_table_header_created_at'] }}</th>
+                    <th style="width: 80px;min-width: 80px;">{{ translations['questions_table_header_action'] }}</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+        <div id="overlay_questions_table" class="overlay">
+            <i class="fa fa-refresh fa-spin"></i>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+
+
+
+{% block scripts %}
+<script src="{{url_for('static',filename='content/js/questions.js')}}?v={{ version }}"></script>
+{% endblock %}

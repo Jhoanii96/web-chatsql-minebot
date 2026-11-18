@@ -1,0 +1,570 @@
+﻿{% extends "layout.html" %}
+
+{% block header_title %}
+<title>{{ translations['chatsql_subtitle_name'] }}</title>
+{% endblock %}
+
+{% block header_scripts %}
+<link rel="stylesheet" href="/static/scripts/choices.js/css/choices.min.css" />
+<script src="/static/scripts/chart.js/js/chart.js"></script>
+<script src="/static/scripts/chart.js/js/chartjs-adapter-date-fns.js"></script>
+{% endblock %}
+
+{% block styles %}
+{% endblock %}
+
+{%
+set main_permission = (
+"00000000-0000-0000-0000-000000000000" in user_data['permission'] or
+"a3048cf6-c816-47e7-90f1-186205566626" in user_data['permission']
+)
+%}
+{%
+set openai_permission = (
+"00000000-0000-0000-0000-000000000000" in user_data['permission'] or
+"fc885a6c-846f-4051-bb5d-91eb09589113" in user_data['permission']
+)
+%}
+
+{% block chat_sql_leftnavbar %}
+<li id="section_title_name">
+    <div id="title_name">
+        <div>
+            <span><a href="/">{{ translations['chatbot_title_url_home'] }}</a> / {{
+                translations['chatsql_title_url_chat'] }}</span>
+            <br>
+            <span id="subtitle_name" style="font-size: 18px;font-weight: bold;">{{ translations['chatsql_subtitle_name']
+                }}</span>
+            <button type="button" class="btn-transparent" style="font-size: 18px;display: inline-block;"
+                onclick="chatsql_main_features()"><i class="fa fa-question-circle"></i></button>
+        </div>
+    </div>
+</li>
+{% endblock %}
+
+{% block chat_sql_rightnavbar %}
+<li id="section_navbar_chatsqltype" style="display: none;">
+    <div id="sql_type">
+        <label class="col-form-label" for="sql_chat_type" style="margin: 0;"
+            title="Query: Generates only one table with a query.&#013;Assistant: Generate detailed pre-answers from tables.">Answer
+            option:</label>
+        <select class="form-control" id="sql_chat_type">
+            <option value="chat_sql">Table</option>
+            <option value="chat_gpt">Assistant</option>
+        </select>
+    </div>
+</li>
+
+
+{% if "00000000-0000-0000-0000-000000000000" in user_data['permission'] or
+"64fcac8a-9214-4af8-b707-b8d5c6b7d0d8" in user_data['permission']: %}
+<li id="section_navbar_sqltables" data-title="{{ translations['chatsql_database_modal_title'] }}">
+    <a href="#" data-toggle="modal" data-target="#chatsql_sqltables_modal">
+        <div class="navbar_button_icon">
+            <img src="../static/dist/img/icono/icons4.svg" alt="Settings SQL" style="width: 12px;">
+        </div>
+    </a>
+</li>
+{% endif %}
+
+{% if "00000000-0000-0000-0000-000000000000" in user_data['permission'] or
+"c6ef2d16-5af4-454a-b7ac-300e9809a97c" in user_data['permission']: %}
+<li id="section_navbar_setting" data-title="{{ translations['layout_app_configuration_modal_title_modal'] }}">
+    <a href="#" data-toggle="modal" data-target="#app_configuration_modal">
+        <div class="navbar_button_icon">
+            <img src="../static/dist/img/icono/Setting_line.svg" alt="Settings" style="width: 12px; ">
+        </div>
+    </a>
+</li>
+{% endif %}
+<!-- User Account: style can be found in dropdown.less -->
+<li id="section_navbar_user" class="dropdown user user-menu">
+    <a href="#" class="dropdown-toggle" data-toggle="dropdown">
+        {% if user_data['user_image'] == "": %}
+        <div id="user_profile_image" class="user-profile-image"
+            style="background-color: {{ user_data['profile_color'] }}">{{ user_data['initial_name'] }}</div>
+        {% else %}
+        <div id="user_profile_image" class="user-profile-image"
+            style="background-image: url('{{ user_data['user_image'] }}')"></div>
+        {% endif %}
+        <div class="user_profile_name">
+            <b>{{ user_data['user_name'] + ' ' + user_data['last_name'] }}</b>
+            <br>
+            <span class="hidden-xs">{% if session.get('lang', 'es') == "en": %} {{ user_data['role_name_en'] }} {% else
+                %} {{ user_data['role_name_es'] }} {% endif %}</span>
+        </div>
+    </a>
+    <ul class="dropdown-menu">
+        <!-- User image -->
+        <li class="user-header">
+            <!-- <img src="../static/dist/img/sqlv7/Ellipse 1.svg" class="img-circle" alt="User Image"> -->
+            {% if user_data['user_image'] == "": %}
+            <div id="user_profile_image" class="user-header-profile-image"
+                style="background-color: {{ user_data['profile_color'] }}">{{ user_data['initial_name'] }}</div>
+            {% else %}
+            <div id="user_profile_image" class="user-header-profile-image"
+                style="background-image: url('{{ user_data['user_image'] }}')"></div>
+            {% endif %}
+            <p>
+                {{ user_data['user_name'] + ' ' + user_data['last_name'] }}
+                <small>{{ translations['user_profile_member_since'] }} {{ user_data['created_at'] }} [{{ version
+                    }}]</small>
+            </p>
+        </li>
+        <!-- Menu Footer-->
+        <li class="user-footer">
+            <div class="pull-left" style="display: none;">
+                <a href="#" class="btn btn-primary-bot btn-flat">{{ translations['user_profile_profile'] }}</a>
+            </div>
+            <div class="pull-right">
+                <a href="/logout" class="btn btn-primary-bot btn-flat">{{ translations['user_profile_logout'] }}</a>
+            </div>
+        </li>
+    </ul>
+</li>
+{% endblock %}
+
+
+{% block content %}
+
+<div id="chat-panel" class="col-xs-12">
+    <div id="left-panel" class="col-xs-9">
+        <div class="messages-block">
+            <div id="messages-container" style="overflow: auto;">
+                <div class="config-messages">
+                    <div style="border-radius: 4px;display: none;">
+                        <button id="btn_mode_table" class="btn-sql-database-mode-section" type="button">{{
+                            translations['chatsql_mode_database'] }}</button>
+                        <button id="btn_mode_assistant" class="btn-sql-assistant-mode-section" type="button">{{
+                            translations['chatsql_mode_assistant'] }}</button>
+                    </div>
+                    <div style="display: flex;align-items: center;position: absolute; right: 10px;border-radius: 5px;">
+                        <div id="sql_show_details" style="display: flex;align-items: center;">
+                            <input type="checkbox" id="show_details">
+                            <label for="show_details">{{ translations['chatbot_show_details'] }}</label>
+                        </div>
+                        <a id="sql_clean_chat" href="javascript:;">
+                            <i id="refresh_icon" class="fa fa-refresh" style="margin-right: 5px;"></i><span>{{
+                                translations['chatbot_clean_chat'] }}</span>
+                        </a>
+                    </div>
+                </div>
+                <div id="messages">
+                    <div class="block-chat-message">
+                        <img src="../static/dist/img/v8/Picture_2.jpeg" alt="bot" style="width: 25px;">
+                        <div class="chat-bot">
+                            <span>{{ translations['chatbot_welcome_chat'] }}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div id="goto-bottom"
+                style="color: black;position: absolute;bottom: 110px;right: 15px;float: right;display: none;">
+                <button
+                    style="background: var(--navy-blue);;color: white;border: none;padding: 5px 10px;border-radius: 5px;"
+                    onclick="goto_bottom()">
+                    <i class="fa fa-chevron-down"></i></button>
+            </div>
+            <div class="mt-4" style="width: 90%; margin-left: auto; margin-right: auto; margin-bottom: 2rem;">
+                <div id="stop-chat-button" class="stop-chat-button">
+                    <button id="btn-stop-chat-button"
+                        style="height: 27px;background: #001329;color: white;border: none;padding: 4px 15px;"
+                        onclick="stop_chat_button()">
+                        <i class="fa fa-stop"></i>
+                        {{ translations['chatbot_stop_chat'] }}
+                    </button>
+                </div>
+
+                <form id="message-form" class="message-form-chatsql" autocomplete="off" class="flex items-stretch">
+                    <div style="display: flex;align-items: center;">
+                        <textarea id="message-input" class="message-input-chatsql"
+                            placeholder="{{ translations['chatbot_placeholder_send_message'] }}" rows="1"
+                            autocomplete="off"></textarea>
+                        <button id="button-submit" type="submit"> <i class="fa fa-send"></i> </button>
+                    </div>
+                    <div style="display: flex;align-items: center;justify-content: space-between;">
+                        <div style="display: flex;">
+                            <div class="block-list-tables">
+                                <i class="fa fa-fw fa-table"></i>
+                                <select class="form-control" id="table_name" style="display: none;">
+                                    {% for group, tables in sql_list|groupby('table_group') %}
+                                    <optgroup label="{{ group if group else 'No Group' }}">
+                                        {% for t in tables %}
+                                        <option value="{{ t.id }}"
+                                            title="{{ 'Table: ' + t.source_table }}{{ ' (' + translations['chatbot_updated_at'] + ' ' + t.last_data_updated + ')' if t.last_data_updated else '' }}"
+                                            data-secret="{{ t.secrets }}" data-source="{{ t.source_table }}" data-table="{{ t.table_name }}">
+                                            {{ t.table_name }}{{ ' (' + translations['chatbot_updated_at'] + ' ' + t.last_data_updated + ')' if t.last_data_updated else '' }}
+                                        </option>
+                                        {% endfor %}
+                                    </optgroup>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <button type="button"
+                                    id="analyticToggle"
+                                    class="btn-analytic"
+                                    aria-pressed="false"
+                                    title="Activar modo analítico">
+                                <!-- Ícono bombilla (usa stroke=currentColor) -->
+                                <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                                    <path d="M9 18h6M10 22h4M12 2a7 7 0 00-4 12.2V17a1 1 0 001 1h6a1 1 0 001-1v-2.8A7 7 0 0012 2z"/>
+                                </svg>
+                                <span>Analítico</span>
+                            </button>
+                        </div>
+                        <div class="block-list-models">
+                            <select id="list_openai_models">
+                                <optgroup label="OpenAI">
+                                    {% for model in openai_list_models["chat_completion"] %}
+                                        {% set option_value = "open_ai|" + model %}
+                                        {% if user_data["openai_type"] or user_data['default_openai_type'] == 'open_ai' %}
+                                            {% if user_data["openai_model"] != '' %}
+                                                <option value="{{ option_value }}" {% if user_data["openai_model"] == model %}selected{% endif %}>
+                                                    {{ model }}
+                                                </option>
+                                            {% else %}
+                                                <option value="{{ option_value }}" {% if user_data["default_openai_model"] == model %}selected{% endif %}>
+                                                    {{ model }}
+                                                </option>
+                                            {% endif %}
+                                        {% else %}
+                                            <option value="{{ option_value }}">
+                                                {{ model }}
+                                            </option>
+                                        {% endif %}
+                                    {% endfor %}
+                                </optgroup>
+                                
+                                <optgroup label="Azure">
+                                    {% for model in azure_list_models["chat_completion"] %}
+                                        {% set option_value = "azure|" + model %}
+                                        {% if user_data["openai_type"] or user_data['default_openai_type'] == 'azure' %}
+                                            {% if user_data["azure_openai_model"] != '' %}
+                                                <option value="{{ option_value }}" {% if user_data["azure_openai_model"] == model %}selected{% endif %}>
+                                                    {{ model }}
+                                                </option>
+                                            {% else %}
+                                                <option value="{{ option_value }}" {% if user_data["default_azure_openai_model"] == model %}selected{% endif %}>
+                                                    {{ model }}
+                                                </option>
+                                            {% endif %}
+                                        {% else %}
+                                            <option value="{{ option_value }}">
+                                                {{ model }}
+                                            </option>
+                                        {% endif %}
+                                    {% endfor %}
+                                </optgroup>
+                            </select>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    <div id="right-panel" class="col-xs-3 right-thought-panel">
+        <div id="thought-section">
+            <div class="nav-tabs-custom" style="border-top-left-radius: 15px;">
+                <ul class="nav nav-tabs" style="font-size: 10px;display: flex;justify-content: center;">
+                    <li class="active">
+                        <a href="#questions" data-toggle="tab" style="padding: 10px 25px;">{{
+                            translations['chatbot_questions_chat'] }}</a>
+                    </li>
+                    <li>
+                        <a href="#historical" data-toggle="tab" style="padding: 10px 25px;">{{
+                            translations['chatbot_historical_chat'] }}</a>
+                    </li>
+                </ul>
+                <div class="tab-content" style="height: 80vh;overflow-y: auto;">
+                    <!-- /.tab-pane -->
+                    <div class="tab-pane active" id="questions">
+                        <div id="questions-container" class="right_chat_panel">
+                            <div class="question-load"><i class="fa fa-circle-o-notch fa-spin"></i></div>
+                        </div>
+                    </div>
+                    <!-- /.tab-pane -->
+                    <div class="tab-pane" id="historical">
+                        <div class="history-search-form">
+                            <div class="input-group">
+                                <input type="text" id="history-search-input" class="form-control" placeholder="{{ translations['chatbot_search'] }}...">
+                                <span class="input-group-btn">
+                                    <button type="button" id="history-search-button" id="search-btn" class="btn btn-flat"><i class="fa fa-search"></i>
+                                    </button>
+                                </span>
+                            </div>
+                        </div>
+                        <div id="thought">
+                            <div class="thought-load"><i class="fa fa-circle-o-notch fa-spin"></i></div>
+                        </div>
+                    </div>
+
+                    <!-- /.tab-pane -->
+                </div>
+                <!-- /.tab-content -->
+            </div>
+            <!-- nav-tabs-custom -->
+
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}
+
+{% block chat_sql_modals %}
+
+<div class="modal fade" id="chatsql_sqltables_modal">
+    <div id="modal-chat-large" class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+                <h4 id="title_modal" class="modal-title" style="display: inline-block;">{{
+                    translations['chatsql_database_modal_title'] }}</h4>
+            </div>
+            <div class="modal-body" style="display: flex;">
+                <div id="modal-database-form" class="col-md-4">
+                    <div>
+                        <label for="sql_server_connection" style="font-weight: normal;">{{
+                            translations['chatsql_database_modal_sqlserver'] }}</label>
+                        <select class="form-control" id="sql_server_connection">
+                            <option value="-">{{ translations['chatsql_database_modal_sqlserver_select'] }}</option>
+                            {% for item in sql_secrets %}
+                            <option value="{{ item.secrets }}">{{ item.database_description }}</option>
+                            {% endfor %}
+                        </select>
+
+                        <div style="margin-bottom: 15px;">
+                            <label for="sql_table_option" style="font-weight: normal;">{{
+                                translations['chatsql_database_modal_sqltable'] }}</label>
+                            <select class="form-control" id="sql_table_option" name="sql_table_option" style="width: 100%;">
+                                <option value="-" selected="selected">{{
+                                    translations['chatsql_database_modal_sqltable_select'] }}</option>
+                            </select>
+                        </div>
+                        <input class="form-control" id="sql_table_name"
+                            placeholder="{{ translations['chatsql_database_modal_placeholder_table_name'] }}">
+                        <input class="form-control" id="sql_table_group"
+                            placeholder="{{ translations['chatsql_database_modal_placeholder_table_group'] }}">
+                        <textarea class="form-control" id="sql_table_description" rows="5"
+                            placeholder="{{ translations['chatsql_database_modal_placeholder_table_description'] }}"></textarea>
+
+                        <div>
+                            <button class="btn btn-default" id="sql_btn_execute"
+                                style="margin-top: 5px; margin-bottom: 5px;display: none;">
+                                <i class="fa fa-play" style="color: green"></i> Execute example table
+                            </button>
+                            <button type="button" id="button_close_sqlstrconn"
+                                class="btn sql_close_button sql_button_style" data-dismiss="modal">{{
+                                translations['chatbot_close_button'] }}</button>
+                            <button class="btn btn-primary-bot sql_button_style" id="sql_btn_save">
+                                {{ translations['chatsql_database_modal_save_table_button'] }}
+                            </button>
+                        </div>
+
+                        <!--
+                        <div id="sql_result_table_executed" style="overflow: auto;width: 100%;max-height: 300px; margin: 10px 0;">
+                            <table class="table table-striped" id="sql_result_table">
+                            </table>
+                        </div>
+                        <div style="display: flex;"><span id="sql_text_info"></span></div>
+                        -->
+                    </div>
+                </div>
+
+                <div class="col-md-8">
+                    <div class="box" style="margin-top: 20px;">
+                        <div class="box-header">
+                            <h3 class="box-title">{{ translations['chatsql_database_modal_table_title'] }}</h3>
+                        </div>
+                        <div class="box-body">
+                            <table class="table table-format table-striped" id="tableSqlDatabase"
+                                style="text-align: left;">
+                                <thead>
+                                    <tr>
+                                        <th style="width: 40px;">{{ translations['chatsql_database_modal_table_header_id'] }}</th>
+                                        <th style="min-width: 100px;">Server</th>
+                                        <th style="min-width: 100px;">{{ translations['chatsql_database_modal_table_header_source_table'] }}</th>
+                                        <th style="min-width: 100px;">{{ translations['chatsql_database_modal_table_header_table_name'] }}</th>
+                                        <th style="width: 150px;min-width: 150px;">{{ translations['chatsql_database_modal_table_header_table_group'] }}</th>
+                                        <th style="width: 150px;min-width: 150px;">{{ translations['chatsql_database_modal_table_header_table_description'] }}</th>
+                                        <th style="width: 60px;min-width: 60px;">{{ translations['chatsql_database_modal_table_header_action'] }}</th>
+                                    </tr>
+                                </thead>
+                                <tbody></tbody>
+                            </table>
+                        </div>
+
+                        <!--
+                        <div id="overlay_sqldatabase_table" class="overlay">
+                            <i class="fa fa-refresh fa-spin"></i>
+                        </div>
+                        -->
+                    </div>
+                </div>
+
+
+            </div>
+        </div>
+        <!-- /.modal-content -->
+        <!-- /.modal-dialog -->
+
+    </div>
+
+</div>
+
+
+
+
+<div class="modal fade" id="chatsql_chatgraph_modal">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+                <h4 id="title_modal" class="modal-title">{{ translations['chatsql_chart_modal_title'] }}</h4>
+            </div>
+            <div class="modal-body" style="display: flex;">
+                <div class="col-md-12" style="width: 100%;">
+                    <div style="display: flex;align-items: center;">
+                        <div>
+                            <label class="col-form-label" for="sql_datetime_column">{{
+                                translations['chatsql_chart_modal_date_column'] }}</label>
+                            <select class="form-control" id="sql_datetime_column" style="width: auto;">
+                                <option value="-" selected="selected">{{ translations['chatbot_select'] }}</option>
+                            </select>
+                        </div>
+                        <div style="margin-left: 10px;">
+                            <label class="col-form-label" for="sql_value_column">{{
+                                translations['chatsql_chart_modal_value_column'] }}</label>
+                            <select class="form-control" id="sql_value_column" style="width: auto;">
+                                <option value="-" selected="selected">{{ translations['chatbot_select'] }}</option>
+                            </select>
+                        </div>
+                    </div>
+
+
+                    <div style="margin-top: 10px; margin-bottom: 5px; float: left;">
+                        <button class="btn btn-primary-bot" id="sql_chart_execute_button" onclick="sql_chart_execute(this)" disabled>
+                            {{ translations['chatbot_execute'] }}
+                        </button>
+                    </div>
+                    <div>
+                        <canvas id="my_statistics_chart"></canvas>
+                    </div>
+                    <div class="statistics_container">
+                        <div class="statistics_column">
+                            <span id="statistics_center"></span>
+                            <span id="statistics_stddev"></span>
+                        </div>
+                        <div class="statistics_column">
+                            <span id="statistics_lcl"></span>
+                            <span id="statistics_ucl"></span>
+                        </div>
+                        <div class="statistics_column">
+                            <span id="statistics_beyondLimits"></span>
+                            <span id="statistics_violatingRuns"></span>
+                        </div>
+                    </div>
+
+                </div>
+
+            </div>
+            <div class="modal-footer">
+                <button type="button" id="button_close_sqlstrconn" class="btn btn-default" data-dismiss="modal">{{
+                    translations['chatbot_close_button'] }}</button>
+            </div>
+        </div>
+        <!-- /.modal-content -->
+        <!-- /.modal-dialog -->
+
+    </div>
+
+</div>
+
+<!-- Modal 2 -->
+<div class="modal fade" id="list_sql_datatable" tabindex="-1" aria-labelledby="list_sql_datatable_label" style="display: none;">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" style="display: inline-block;">{{ translations['chatsql_database_modal_title'] }}</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <label for="sql_table_option_2" style="font-weight: normal;">{{ translations['chatsql_database_modal_sqltable'] }}</label>
+                <span id="sql_table_refresh" style="font-weight: normal;display: inline-block;"><i class="fa fa-refresh fa-spin"></i></span>
+                <select class="form-control" id="sql_table_option_2" name="sql_table_option_2" style="width: 100%;">
+                    <option value="-">{{ translations['chatsql_database_modal_sqltable_select'] }}</option>
+                </select>
+                <button type="button" id="sql_datatable_accept" class="btn btn-primary-bot" data-dismiss="modal" style="margin-top: 10px;">{{ translations['chatbot_accept'] }}</button>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">{{ translations['chatbot_close_button'] }}</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+
+{% block app_configuration_tabs %}
+
+{% if main_permission %}
+<li class="active"><a href="#main" data-toggle="tab">{{ translations['layout_app_configuration_modal_main'] }}</a></li>
+{% endif %}
+
+{% if openai_permission %}
+<li><a href="#openai" data-toggle="tab">{{ translations['layout_app_configuration_modal_openai'] }}</a></li>
+{% endif %}
+
+{% endblock %}
+
+
+{% block app_configuration_main %}
+<div class="tab-pane {% if main_permission %}active{% endif %}" id="main" {% if main_permission==False %}style="display: none;" {% endif %}>
+    <div id="section_configuration_chatsql">
+        <div class="mb-3">
+            <label class="col-form-label" for="sql_system_prompt">{{
+                translations['chatsql_app_configuration_modal_system_prompt'] }}</label>
+            <div style="min-height: 40px;">
+                <textarea id="sql_system_prompt" class="form-control" rows="10" autocomplete="off"
+                    placeholder="{{ translations['chatsql_app_configuration_modal_placeholder_system_prompt'] }}"
+                    style="font-size: 12px;" {% if main_permission==False %}readonly{% endif %}>
+{% if session.get('lang', 'es') == 'es' %}{{ user_data['sql_system_prompt_es'] or user_data['default_system_prompt_sql_es'] }}{% else %}{{ user_data['sql_system_prompt'] or user_data['default_system_prompt_sql'] }}{% endif %}</textarea>
+            </div>
+        </div>
+    </div>
+    <div id="section_data_dictionary_chatsql" {% if main_permission==False %}style="display: none;" {% endif %}>
+        <div>
+            <label class="col-form-label" for="sql_data_dictionary">{{
+                translations['chatsql_app_configuration_modal_data_dictionary'] }}</label>
+            <input id="sql_input_dictionary_table" style="width: 200px;" value="" disabled>
+            <div style="min-height: 40px;">
+                <textarea id="sql_data_dictionary" class="form-control" rows="10" autocomplete="off"
+                    style="font-size: 12px;" disabled></textarea>
+            </div>
+            <div style="height: 30px;display: flex;align-items: center;"><a href="/dictionary">{{
+                    translations['chatsql_app_configuration_modal_edit_data_dictionary'] }}</a></div>
+        </div>
+    </div>
+    {% if main_permission %}
+    <button type="button" id="button_save_main_changes" class="btn btn-primary-bot" style="margin-top: 15px;">{{
+        translations['layout_app_configuration_modal_save'] }}</button>
+    {% endif %}
+</div>
+{% endblock %}
+
+
+
+{% block scripts %}
+<script src="/static/scripts/choices.js/js/choices.min.js"></script>
+<script src="/static/content/js/statistics.js?v={{ version }}"></script>
+<script src="/static/content/js/chatsql.js?v={{ version }}"></script>
+{% endblock %}

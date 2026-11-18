@@ -1,0 +1,199 @@
+﻿<!DOCTYPE html>
+<html lang="{{ session.get('lang', 'es') }}">
+
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ title }}</title>
+
+    <link rel="icon" type="image/png" href="/static/favicon/favicon-96x96.png" sizes="96x96" />
+    <link rel="icon" type="image/svg+xml" href="/static/favicon/favicon.svg" />
+    <link rel="shortcut icon" href="/static/favicon/favicon.ico" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/static/favicon/apple-touch-icon.png" />
+    <meta name="apple-mobile-web-app-title" content="MineBot" />
+    <link rel="manifest" href="/static/favicon/site.webmanifest" />
+    <meta name="msapplication-TileColor" content="#da532c">
+    <meta name="theme-color" content="#ffffff">
+    
+    <link rel="stylesheet" href="/static/dist/css/skins/_all-skins.css?v={{ version }}">
+    <link rel="preload" href="/static/fonts/arquitecta-webfont.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+    <link href="https://fonts.googleapis.com/css?family=Poppins" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    <style>
+        @font-face {
+            font-family: 'Arquitecta';
+            src: url('static/fonts/arquitecta-webfont.woff2') format('woff2'),
+                url('static/fonts/arquitecta-webfont.woff') format('woff'),
+                url('static/fonts/arquitecta-webfont.ttf') format('truetype');
+            font-weight: normal;
+            font-style: normal;
+            font-display: swap;
+        }
+    </style>
+    <!-- Bootstrap 3.3.7 -->
+    <link rel="stylesheet" href="/static/bower_components/bootstrap/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="/static/content/css/login2.css?v={{ version }}">
+
+    <script type="text/javascript">
+        // Global variables
+        window.is_azure = parseInt('{{ AUTHENTICATE_WITH_AZURE }}');
+        window.login_next_button = '{{ translations["login_next_button"] }}';
+        window.login_login_button = '{{ translations["login_login_button"] }}';
+        window.login_back_to_login = '{{ translations["login_back_to_login"] }}';
+        window.login_back_to_login_with_microsoft = '{{ translations["login_back_to_login_with_microsoft"] }}';
+        window.login_welcome_to_registration_1 = '{{ translations["login_welcome_to_registration_1"] }}';
+        window.login_welcome_to_registration_2 = '{{ translations["login_welcome_to_registration_2"] }}';
+        window.login_registration_criteria = '{{ translations["login_registration_criteria"] }}';
+        window.login_register_button = '{{ translations["login_register_button"] }}';
+        window.login_successful_registration = '{{ translations["login_successful_registration"] }}';
+        window.login_user_not_found = '{{ translations["login_user_not_found"] }}';
+        window.login_password_not_match = '{{ translations["login_password_not_match"] }}';
+        window.login_enter_password = '{{ translations["login_enter_password"] }}';
+        window.login_signin_incorrect_password = '{{ translations["login_signin_incorrect_password"] }}';
+        window.login_maximum_verification = '{{ translations["login_maximum_verification"] }}';
+        window.login_maximum_login = '{{ translations["login_maximum_login"] }}';
+        window.validate_password_lenght = '{{ translations["validate_password_lenght"] }}';
+        window.validate_password_has_letter = '{{ translations["validate_password_has_letter"] }}';
+        window.validate_password_has_number = '{{ translations["validate_password_has_number"] }}';
+        window.validate_password_has_specialchar = '{{ translations["validate_password_has_specialchar"] }}';
+        window.validate_password_is_valid = '{{ translations["validate_password_is_valid"] }}';
+    </script>
+
+</head>
+
+<body class="{{ theme }} login">
+    <div class="container">
+        <!-- Left Panel -->
+        <div class="left-panel">
+            <img class="bot-login-img" src="/static/dist/img/v8/Picture_1.jpeg" alt="MineBot"> <!-- Replace with actual bot image -->
+            <span style="font-family: 'Arquitecta';font-size: 26px;">Mine<b style="font-family: inherit;">Bot</b></span>
+            <span style="font-family: 'Arquitecta';font-size: 22px;">{{ translations['chatbot_app_title_maintenance'] }}</span>
+            <!-- You can add the slider or more visuals here if necessary -->
+        </div>
+
+        <!-- Right Panel (Login Form) -->
+        <div class="right-panel">
+            <img class="bot-logo" src="/static/dist/img/v8/logo 1.svg" alt="MineBot"> <!-- Replace with actual bot image -->
+            {% if AUTHENTICATE_WITH_AZURE == 1: %}
+            <div class="cover-container" id="login_with_microsoft" style="text-align: center;">
+                <div style="margin-top: 20px;">
+                    <a href="{{ auth_uri }}" style="text-decoration: none;">
+                        <svg xmlns="http://www.w3.org/2000/svg" xml:space="preserve" style="width: 75%;"
+                            viewBox="0 0 3278 522" class="SignInButton">
+                            <style type="text/css">
+                                .fil0:hover {
+                                    fill: #4B4B4B;
+                                }
+
+                                .fnt0 {
+                                    font-size: 260px;
+                                    font-family: 'Segoe UI Semibold', 'Segoe UI';
+                                    text-decoration: none;
+                                }
+                            </style>
+                            <rect class="fil0" x="2" y="2" width="3174" height="517" fill="black"></rect>
+                            <rect x="150" y="129" width="122" height="122" fill="#F35325"></rect>
+                            <rect x="284" y="129" width="122" height="122" fill="#81BC06"></rect>
+                            <rect x="150" y="263" width="122" height="122" fill="#05A6F0"></rect>
+                            <rect x="284" y="263" width="122" height="122" fill="#FFBA08"></rect>
+                            <text x="470" y="357" fill="white" class="fnt0">Sign in with Microsoft</text>
+                        </svg>
+                    </a>
+                </div>
+                <div style="margin-top: 5px;">
+                    <a href="javascript:void(0);" id="btn_go_login_basic" class="btn-link"
+                        style="text-decoration: underline;">Login with basic account</a>
+                </div>
+            </div>
+            {% endif %}
+            <div class="app-login-box" id="login_with_basic" {% if AUTHENTICATE_WITH_AZURE == 1 %}style="display: none;"{% endif %}>
+                <div style="background-color: transparent; border: none;">
+                    <div class="modal-body"
+                        style="border-top-right-radius: 0.25rem; border-top-left-radius: 0.25rem;display: flex;flex-direction: column;">
+                        <div class="modal-title text-center" style="font-size: 16px;">
+                            <div class="mt-2" id="login_message_welcome">
+                                <div>{{ translations['login_welcome_back_1'] }},</div><span>{{ translations['login_welcome_back_2'] }}</span>
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="col-md-12" id="section_login_email" style="display: block;">
+                                <div class="position-relative" style="margin: 20px 0px;">
+                                    <input id="login_email_input" placeholder="{{ translations['login_placeholder_email'] }}" type="email"
+                                        class="form-control login-input">
+                                </div>
+                            </div>
+                            <div class="col-md-12" id="section_login_password" style="display: none;">
+                                <div class="position-relative" style="margin: 20px 0px;">
+                                    <input id="login_password_input" placeholder="{{ translations['login_placeholder_password'] }}" type="password"
+                                        class="form-control login-input">
+                                </div>
+                            </div>
+                            <div class="col-md-12" id="section_login_new_password" style="display: none;">
+                                <div class="position-relative" style="margin: 20px 0px;">
+                                    <input id="login_new_password" placeholder="{{ translations['login_placeholder_password'] }}" type="password"
+                                        class="form-control login-input" autocomplete="new-password">
+                                </div>
+                            </div>
+                            <div class="col-md-12" id="section_login_repeat_password" style="display: none;">
+                                <div class="position-relative" style="margin: 0px 0px 20px 0px;">
+                                    <input id="login_repeat_new_password" placeholder="{{ translations['login_placeholder_repeat_password'] }}"
+                                        type="password" class="form-control login-input"
+                                        autocomplete="new-password">
+                                </div>
+                            </div>
+                            <div class="col-md-12" id="section_keep_login" style="display: none;">
+                                <input name="check" id="login_keep_login" type="checkbox" class="form-check-input" style="margin: 0px 3px;">
+                                <label for="login_keep_login" class="form-check-label" style="margin: 0;">Keep me logged in</label>
+                            </div>
+                            <div id="login_error_message" class="col-md-12" style="margin-bottom: 10px;font-size: 12px;display: none;">
+                                <span class="form-check-label" style="color: red;"></span>
+                            </div>
+                            <div id="login_info_message" class="col-md-12" style="margin-bottom: 10px;font-size: 12px;display: none;">
+                                <span class="form-check-label" style="color: blue;"></span>
+                            </div>
+                        </div>
+                        
+                        
+                        
+
+                        <div class="divider"></div>
+                        <span class="mb-0" style="display: none;">
+                            No account? 
+                            <a href="mailto:gointegreat.support@gointegreat.com"
+                                class="btn-link">dbo.support@bdo.com</a>
+                        </span>
+                    </div>
+                    <div class="modal-footer">
+                        <div class="float-left">
+                            <a href="javascript:void(0);" id="btn_go_login_microsoft" class="btn-login-link" {% if AUTHENTICATE_WITH_AZURE == 0 %}style="display: none;"{% endif %}><i
+                                    class="fa fa-arrow-left" aria-hidden="true"></i>&nbsp;Back to Login with
+                                Microsoft</a>
+                        </div>
+                        <div class="float-right">
+                            <button id="btn_login_basic_account" data-steps="1" data-new-password="0"
+                                class="btn btn-primary-login" style="font-size: 12px;">{{ translations['login_next_button'] }}</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div style="position: absolute;right: 10px;bottom: 10px;font-size: 12px;color: white;">
+        <!-- Language Switch Links -->
+        <a href="{{ url_for('set_language', lang_code='en') }}" style="color: white;">{{ translations['chatbot_language_english'] }}</a> | 
+        <a href="{{ url_for('set_language', lang_code='es') }}" style="color: white;">{{ translations['chatbot_language_spanish'] }}</a>
+    </div>
+    
+    <script src="/static/scripts/jquery-1.10.2.js"></script>
+    <!-- Bootstrap 3.3.7 -->
+    <script src="/static/bower_components/bootstrap/dist/js/bootstrap.min.js"></script>
+    <script src="/static/scripts/respond.js"></script>
+    <script src="/static/content/js/login.js?v={{ version }}"></script>
+    <script src="/static/content/js/coockie.js?v={{ version }}"></script>
+
+</body>
+
+</html>

@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Application Error | Your Web App</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+        .error-container {
+            background-color: #f8f9fa;
+            border-left: 4px solid #dc3545;
+            padding: 1.5rem;
+            margin: 2rem 0;
+            border-radius: 0 4px 4px 0;
+        }
+        .error-details {
+            font-family: 'Courier New', monospace;
+            background-color: #f1f1f1;
+            padding: 1rem;
+            overflow-x: auto;
+            border-radius: 4px;
+            font-size: 0.9rem;
+            margin-top: 1rem;
+        }
+        .btn {
+            display: inline-block;
+            background-color: #0062cc;
+            color: white;
+            padding: 0.6rem 1.2rem;
+            text-decoration: none;
+            border-radius: 4px;
+            transition: background-color 0.3s;
+        }
+        .btn:hover {
+            background-color: #004ba0;
+        }
+        footer {
+            margin-top: 2rem;
+            padding-top: 1rem;
+            border-top: 1px solid #eee;
+            font-size: 0.8rem;
+            color: #6c757d;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Application Error</h1>
+    </header>
+    
+    <main>
+        <div class="error-container">
+            <p>We encountered an unexpected issue while processing your request.</p>
+            <p>Our technical team has been notified. Please try again later.</p>
+            
+            <div class="error-details">
+                {{ result }}
+            </div>
+        </div>
+        
+        <p>
+            <a href="{{ url_for('app_login.login') }}" class="btn">Return to Login</a>
+        </p>
+    </main>
+    
+    <footer>
+        <p>&copy; 2023 Your Web App. All rights reserved.</p>
+    </footer>
+</body>
+</html>
